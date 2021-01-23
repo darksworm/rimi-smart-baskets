@@ -19,7 +19,7 @@
     const cartPageURL = `https://www.rimi.lv/e-veikals/${lang}/checkout/cart`;
     const cartRefreshURL = `https://www.rimi.lv/e-veikals/${lang}/checkout/refresh`;
     const productChangeURL = "https://www.rimi.lv/e-veikals/cart/change";
-    const basketAddSVG = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 511.998 511.998" style="enable-background:new 0 0 511.998 511.998;" xml:space="preserve"><g><g><g><path d="M177.461,374.407c-34.713,0-62.951,28.238-62.951,62.951s28.238,62.951,62.951,62.951s62.951-28.238,62.951-62.951S212.174,374.407,177.461,374.407z M177.461,464.336c-14.874,0-26.979-12.105-26.979-26.979s12.105-26.979,26.979-26.979c14.88,0,26.979,12.105,26.979,26.979S192.336,464.336,177.461,464.336z"/><path d="M378.904,374.407c-34.713,0-62.951,28.238-62.951,62.951s28.238,62.951,62.951,62.951c34.713,0,62.951-28.238,62.951-62.951S413.617,374.407,378.904,374.407z M378.904,464.336c-14.874,0-26.979-12.105-26.979-26.979s12.105-26.979,26.979-26.979c14.88,0,26.979,12.105,26.979,26.979S393.778,464.336,378.904,464.336z"/><path d="M508.181,134.912c-3.405-4.359-8.633-6.907-14.167-6.907h-86.333c-9.934,0-17.986,8.052-17.986,17.986c0,9.934,8.052,17.986,17.986,17.986h63.341L434.99,309.064H144.025l-31.226-145.093h62.863v-35.972h-70.605L87.729,47.482c-1.787-8.286-9.107-14.203-17.584-14.203H17.986C8.052,33.279,0,41.331,0,51.265c0,9.934,8.052,17.986,17.986,17.986h37.633l56.296,261.576c1.787,8.286,9.107,14.203,17.584,14.203h319.55c8.262,0,15.462-5.636,17.452-13.651l44.965-181.053C512.803,144.954,511.586,139.27,508.181,134.912z"/></g></g></g><g><g><path d="M291.372,11.69c-73.389,0-133.096,59.707-133.096,133.096s59.707,133.096,133.096,133.096s133.096-59.707,133.096-133.096S364.761,11.69,291.372,11.69z M291.372,241.91c-53.556,0-97.124-43.574-97.124-97.124s43.568-97.124,97.124-97.124c53.55,0,97.124,43.574,97.124,97.124C388.497,198.336,344.929,241.91,291.372,241.91z"/></g></g><g><g><path d="M291.372,89.03c-9.934,0-17.986,8.052-17.986,17.986v75.541c0,9.934,8.052,17.986,17.986,17.986c9.934,0,17.986-8.052,17.986-17.986v-75.541C309.358,97.081,301.307,89.03,291.372,89.03z"/></g></g><g><g><path d="M328.543,126.8h-74.941c-9.934,0-17.986,8.052-17.986,17.986c0,9.934,8.052,17.986,17.986,17.986h74.941c9.934,0,17.986-8.052,17.986-17.986C346.529,134.852,338.478,126.8,328.543,126.8z"/></g></g></svg>';
+    const cartAddSVG = '<svg enable-background="new 0 0 511.998 511.998" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><path d="m177.46 374.41c-34.713 0-62.951 28.238-62.951 62.951s28.238 62.951 62.951 62.951 62.951-28.238 62.951-62.951-28.238-62.951-62.951-62.951zm0 89.929c-14.874 0-26.979-12.105-26.979-26.979s12.105-26.979 26.979-26.979c14.88 0 26.979 12.105 26.979 26.979s-12.104 26.979-26.979 26.979z"/><path d="m378.9 374.41c-34.713 0-62.951 28.238-62.951 62.951s28.238 62.951 62.951 62.951 62.951-28.238 62.951-62.951-28.238-62.951-62.951-62.951zm0 89.929c-14.874 0-26.979-12.105-26.979-26.979s12.105-26.979 26.979-26.979c14.88 0 26.979 12.105 26.979 26.979s-12.105 26.979-26.979 26.979z"/><path d="m508.18 134.91c-3.405-4.359-8.633-6.907-14.167-6.907h-86.333c-9.934 0-17.986 8.052-17.986 17.986s8.052 17.986 17.986 17.986h63.341l-36.032 145.09h-290.96l-31.226-145.09h62.863v-35.972h-70.605l-17.328-80.517c-1.787-8.286-9.107-14.203-17.584-14.203h-52.159c-9.934 0-17.986 8.052-17.986 17.986s8.052 17.986 17.986 17.986h37.633l56.296 261.58c1.787 8.286 9.107 14.203 17.584 14.203h319.55c8.262 0 15.462-5.636 17.452-13.651l44.965-181.05c1.337-5.372 0.12-11.056-3.285-15.414z"/><path d="m291.37 11.69c-73.389 0-133.1 59.707-133.1 133.1s59.707 133.1 133.1 133.1 133.1-59.707 133.1-133.1-59.707-133.1-133.1-133.1zm0 230.22c-53.556 0-97.124-43.574-97.124-97.124s43.568-97.124 97.124-97.124c53.55 0 97.124 43.574 97.124 97.124 1e-3 53.55-43.567 97.124-97.124 97.124z"/><path d="m291.37 89.03c-9.934 0-17.986 8.052-17.986 17.986v75.541c0 9.934 8.052 17.986 17.986 17.986s17.986-8.052 17.986-17.986v-75.541c0-9.935-8.051-17.986-17.986-17.986z"/><path d="m328.54 126.8h-74.941c-9.934 0-17.986 8.052-17.986 17.986s8.052 17.986 17.986 17.986h74.941c9.934 0 17.986-8.052 17.986-17.986s-8.051-17.986-17.986-17.986z"/></svg>';
 
     injectCSS();
     createCartAppendButtons();
@@ -27,7 +27,7 @@
 
     function assertInCart()
     {
-        if (window.location.href != cartPageURL) {
+        if (window.location.href !== cartPageURL) {
             throw new Error("cannot get carts here, expected to be in cart page");
         }
     }
@@ -40,7 +40,7 @@
         let thisCartName = document.getElementsByClassName("cart__heading")[0].textContent;
 
         for (let otherCart of allCarts) {
-            if (thisCartName == otherCart.name) {
+            if (thisCartName === otherCart.name) {
                 return otherCart;
             }
         }
@@ -136,6 +136,11 @@
     {
         let css = document.createElement('style');
         css.textContent = `
+            .smart-basket-save-button {
+                margin-right: 20px; 
+                font-size: 14px; 
+                line-height: 14px;
+            }
             .smart-basket-add {
                 color: #363d40;
                 display: inline-flex;
@@ -226,8 +231,7 @@
     function storeCurrentCart()
     {
         let cart = getCurrentCart();
-        let products = getCartProducts();
-        cart.products = products;
+        cart.products = getCartProducts();
 
         let savedCarts = {};
 
@@ -248,32 +252,19 @@
 
     function getStoredCart(id)
     {
+        let parsedCarts;
         try {
-            var data = JSON.parse(localStorage.carts);
+            parsedCarts = JSON.parse(localStorage.carts);
         } catch (e) {
             throw new Error('cannot parse saved carts');
         }
 
-        return data[id];
-    }
-
-    function clearCart()
-    {
-        if (assertNotInSavedCart())
-        {
-            throw new Error('Please open a new cart');
-        }
-
-        document.getElementsByClassName("cart-card__delete").forEach(e => e.click());
+        return parsedCarts[id];
     }
 
     async function appendCartItemsToCart(storedCartId)
     {
-        if (assertNotInSavedCart())
-        {
-            throw new Error('Please open a new cart');
-        }
-
+        assertNotInSavedCart();
         loader();
 
         let currentProducts = getCartProducts();
@@ -282,7 +273,7 @@
 
         for (let inCart of currentProducts) {
             for (let add of products) {
-                if (inCart.id != add.id) {
+                if (+inCart.id !== +add.id) {
                     continue;
                 }
 
@@ -300,7 +291,6 @@
                 product.id,
                 product.hiddenAmount,
                 0
-                //product.hiddenStep != 1 ? product.hiddenStep : 0
             )
 
             addingCounter++
@@ -331,12 +321,12 @@
             return;
         }
 
-        let cartElems = document.querySelectorAll("button[name='cart']");
+        let cartElements = document.querySelectorAll("button[name='cart']");
 
-        cartElems.forEach(cartBtnEl => {
+        cartElements.forEach(cartBtnEl => {
             let id = cartBtnEl.value;
 
-            if (id == "new") {
+            if (id === "new") {
                 return;
             }
 
@@ -344,7 +334,7 @@
 
             let smartBasketAdd = document.createElement('span');
 
-            smartBasketAdd.innerHTML = basketAddSVG;
+            smartBasketAdd.innerHTML = cartAddSVG;
             smartBasketAdd.className = 'smart-basket-add';
 
             smartBasketAdd.addEventListener('click', (event) => {
@@ -365,9 +355,8 @@
 
         let el = document.createElement('button');
         el.innerText = 'Save in "Smart Baskets"';
-        el.className = 'link-button';
-        el.style = 'margin-right: 20px; font-size: 14px; line-height: 14px;'
-        el.addEventListener('click', (event) => {
+        el.className = 'link-button smart-basket-save-button';
+        el.addEventListener('click', () => {
             storeCurrentCart();
         });
 
