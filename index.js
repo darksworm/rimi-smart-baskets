@@ -250,16 +250,36 @@
         localStorage.carts = JSON.stringify(savedCarts);
     }
 
-    function getStoredCart(id)
+    function CartNotStored(message)
     {
-        let parsedCarts;
+        const error = new Error(message);
+        error.code = "CART_NOT_STORED";
+        return error;
+    }
+    CartNotStored.prototype = Object.create(Error.prototype);
+
+    function getAllStoredCarts()
+    {
+        if (typeof localStorage.carts === 'undefined') {
+            return {};
+        }
+
         try {
-            parsedCarts = JSON.parse(localStorage.carts);
+            return JSON.parse(localStorage.carts);
         } catch (e) {
             throw new Error('cannot parse saved carts');
         }
+    }
 
-        return parsedCarts[id];
+    function getStoredCart(id)
+    {
+        let carts = getAllStoredCarts();
+
+        if (typeof carts[id] === 'undefined') {
+            throw new CartNotStored();
+        }
+
+        return carts[id];
     }
 
     async function appendCartItemsToCart(storedCartId)
@@ -330,7 +350,11 @@
                 return;
             }
 
-            if (!getStoredCart(id)) return;
+            try {
+                getStoredCart(id);
+            } catch (e) {
+                return;
+            }
 
             let smartBasketAdd = document.createElement('span');
 
