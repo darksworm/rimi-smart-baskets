@@ -1,5 +1,7 @@
 # Rimi Smart Baskets
 
+![tests](https://github.com/darksworm/rimi-smart-baskets/workflows/tests/badge.svg)
+
 ## Setup
 1. open saved basket
 2. run `storeCurrentCart()` in JS console
