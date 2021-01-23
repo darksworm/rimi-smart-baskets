@@ -4,7 +4,7 @@
   "description": "build your cart from presets in the rimi e-store",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/mocha/bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,14 @@
   "bugs": {
     "url": "https://github.com/darksworm/rimi-smart-baskets/issues"
   },
-  "homepage": "https://github.com/darksworm/rimi-smart-baskets#readme"
+  "homepage": "https://github.com/darksworm/rimi-smart-baskets#readme",
+  "devDependencies": {
+    "await-async-task": "^2.0.2",
+    "axios": "^0.21.1",
+    "axios-mock-adapter": "^1.19.0",
+    "chai": "^4.2.0",
+    "jsdom": "^16.4.0",
+    "mocha": "^8.2.1",
+    "mock-local-storage": "^1.1.17"
+  }
 }
