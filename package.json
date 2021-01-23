@@ -22,6 +22,9 @@
   },
   "homepage": "https://github.com/darksworm/rimi-smart-baskets#readme",
   "devDependencies": {
+    "await-async-task": "^2.0.2",
+    "axios": "^0.21.1",
+    "axios-mock-adapter": "^1.19.0",
     "chai": "^4.2.0",
     "jsdom": "^16.4.0",
     "mocha": "^8.2.1",
