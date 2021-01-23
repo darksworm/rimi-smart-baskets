@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Rimi Smart Baskets
 // @namespace    http://tampermonkey.net/
-// @version      0.1.2
+// @version      0.1.3
 // @updateURL    https://raw.githubusercontent.com/darksworm/rimi-smart-baskets/main/index.js
 // @description  try to take over the world!
 // @author       darksworm
@@ -282,6 +282,11 @@
         return carts[id];
     }
 
+    function cartExistsInStorage(id)
+    {
+        return typeof getAllStoredCarts()[id] !== 'undefined'
+    }
+
     async function appendCartItemsToCart(storedCartId)
     {
         assertNotInSavedCart();
@@ -378,10 +383,12 @@
         }
 
         let el = document.createElement('button');
-        el.innerText = 'Save in "Smart Baskets"';
+        const existsInStorage = cartExistsInStorage(getCurrentCart().id);
+        el.innerText = `${existsInStorage ? 'Update cart' : 'Save cart'} in "Smart Baskets"`;
         el.className = 'link-button smart-basket-save-button';
         el.addEventListener('click', () => {
             storeCurrentCart();
+            window.alert(`Cart "${getCurrentCart().name}" ${existsInStorage ? 'has been updated' : 'is now stored'} in "Smart Baskets"`)
         });
 
         const headingEl = document.querySelector('.cart__header > h3.cart__heading')

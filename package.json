@@ -28,6 +28,7 @@
     "chai": "^4.2.0",
     "jsdom": "^16.4.0",
     "mocha": "^8.2.1",
-    "mock-local-storage": "^1.1.17"
+    "mock-local-storage": "^1.1.17",
+    "sinon": "^9.2.4"
   }
 }

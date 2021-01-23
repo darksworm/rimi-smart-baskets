@@ -5,6 +5,8 @@ require('mock-local-storage')
 const axios = require("axios");
 const AxiosMockAdapter = require("axios-mock-adapter")
 const {asyncTasks} = require('await-async-task')
+const sinon = require('sinon');
+
 
 before(function () {
     global.axiosMock = new AxiosMockAdapter(axios);
@@ -20,6 +22,8 @@ function setupDOM(htmlPath) {
     global.document = dom.window.document
     global.window = dom.window
     global.window.localStorage = global.localStorage
+    global.window.alert = dom.window.alert
+    window.alert = (msg) => msg;
 
     global.axiosMock.resetHandlers()
     global.axiosMock.resetHistory()
@@ -64,6 +68,23 @@ function setupMockCarts() {
                 "hiddenAmount": "1",
                 "hiddenStep": "1"
             }]
+        },
+        '1101456706': {
+            id: '1101456706',
+            name: 'KETO-CHILLI',
+            products: [
+                {
+                    "id": "227060",
+                    "name": "Skābais krējums Exporta 25% 360g",
+                    "category": "SH-11-4-12/SH-11-4/SH-11/SH",
+                    "brand": "Baltais",
+                    "price": 1.27,
+                    "currency": "EUR",
+                    "quantity": 1,
+                    "hiddenAmount": "1",
+                    "hiddenStep": "1"
+                }
+            ]
         }
     };
 
@@ -72,19 +93,13 @@ function setupMockCarts() {
 
 }
 
-describe('DOM with opened saved basket', function () {
+describe('DOM with opened saved basket that is not stored', function () {
     function getCarts() {
         return JSON.parse(global.localStorage.carts);
     }
 
     function saveCurrentCart() {
-        let allButtons = document.getElementsByTagName("button")
-        let saveButton = Array.from(allButtons)
-            .find(function (el) {
-                return el.innerText === "Save in \"Smart Baskets\""
-            });
-
-        saveButton.click();
+        document.querySelector('.smart-basket-save-button').click();
     }
 
     function getFirstCart() {
@@ -102,11 +117,11 @@ describe('DOM with opened saved basket', function () {
         chai.assert.isEmpty(localStorage);
     });
 
-    it('should contain `Save in "Smart Baskets"` button', function () {
+    it('should contain `Save cart in "Smart Baskets"` button', function () {
         let allButtons = document.getElementsByTagName("button")
         let saveButton = Array.from(allButtons)
             .find(function (el) {
-                return el.innerText === "Save in \"Smart Baskets\""
+                return el.innerText === "Save cart in \"Smart Baskets\""
             })
         chai.assert.exists(saveButton)
     })
@@ -153,6 +168,39 @@ describe('DOM with opened saved basket', function () {
         let afterCartProductCount = getFirstCart().products.length;
 
         chai.assert.equal(afterCartProductCount, initialCartProductCount - 1);
+    })
+
+    it('should have correct save cart button text', function () {
+        const btnText = document.querySelector('.smart-basket-save-button').innerText
+        chai.assert.equal(btnText, 'Save cart in "Smart Baskets"')
+    })
+
+    it('should call alert with correct message if cart was saved', function () {
+        let alertSpy = sinon.spy(window, 'alert')
+        saveCurrentCart()
+        chai.assert.equal(alertSpy.getCall(0).args[0], 'Cart "KETO-CHILLI" is now stored in "Smart Baskets"')
+    })
+})
+
+describe('DOM with opened saved basket that is already stored', function () {
+    function saveCurrentCart() {
+        document.querySelector('.smart-basket-save-button').click();
+    }
+
+    beforeEach(function () {
+        setupMockCarts();
+        setupDOM('test/rimi-cart-saved-cart-opened.html')
+    })
+
+    it('should have correct update cart button text', function () {
+        const btnText = document.querySelector('.smart-basket-save-button').innerText
+        chai.assert.equal(btnText, 'Update cart in "Smart Baskets"')
+    })
+
+    it('should call alert with correct message if cart was updated', function () {
+        let alertSpy = sinon.spy(window, 'alert')
+        saveCurrentCart()
+        chai.assert.equal(alertSpy.getCall(0).args[0], 'Cart "KETO-CHILLI" has been updated in "Smart Baskets"')
     })
 })
 
