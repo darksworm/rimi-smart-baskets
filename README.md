@@ -9,3 +9,6 @@
 ## Usage
 1. "Mainīt grozu"
 2. "ADD"
+
+## Testing
+`npm run test`
