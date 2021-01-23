@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="lv">
+
+<head>
+    <title>Rimi e-veikals | Pārtikas un ikdienas preces internetā | Piegāde vai Saņemšana veikalā | Izmēģini jau
+        šodien!</title>
+</head>
+
+<body>
+<header class="cart__header">
+    <h3 class="cart__heading">Pasūtījuma grozs</h3>
+
+    <button class="link-button -with-right-icon js-toggle-saved-cart">
+        Mainīt Grozu
+        <svg class="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+            <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2"
+                  d="M8 16l16 16 16-16"></path>
+        </svg>
+    </button>
+    <form method="post" action="/e-veikals/cart/set-active">
+
+        <input type="hidden" name="_token" value="WStZ8ixWtwsmRZ5UsvhDoZ6uqIVLAFxXMTnf9skg">
+
+        <ul class="saved-cart-popup js-saved">
+            <li>
+                <button name="cart" value="1101490374">SLD-CHKN-PESTO</button>
+            </li>
+            <li>
+                <button name="cart" value="1101522953">temp</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456702">BUTTER-LAMB</button>
+            </li>
+            <li>
+                <button name="cart" value="1101490418">SLD-CEASAR</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456706">KETO-CHILLI</button>
+            </li>
+            <li>
+                <button name="cart" value="1100119260">BF-3-BIEZP</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456659">BF-3-TOMATO</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456725">PB-CHICKEN</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456771">SOY-MINTAY</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456784">CHEDDAR-CHICK</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456788">ZKPOST-CHEESE</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456853">TUNA-POT-SALAD</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456882">CKG-CEPETIS</button>
+            </li>
+            <li>
+                <button name="cart" value="1101456886">CONSUMABLES</button>
+            </li>
+            <li>
+                <button name="cart" value="new" class="js-new-cart">
+                    <span>Sākt jaunu grozu</span>
+                    <svg class="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                        <path d="M6 24h36M24 42V5.9" fill="none" stroke="currentColor" stroke-width="2"
+                              stroke-miterlimit="10"></path>
+                    </svg>
+                </button>
+            </li>
+        </ul>
+    </form>
+</header>
+</body>
+
+</html>
