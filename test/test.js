@@ -28,6 +28,50 @@ function setupDOM(htmlPath) {
     global.window.eval(userscriptJS)
 }
 
+function setupMockCarts() {
+    let carts = {
+        '13371337': {
+            id: '13371337',
+            name: 'dankmemes',
+            products: [{
+                "id": "227060",
+                "name": "Skābais krējums Exporta 25% 360g",
+                "category": "SH-11-4-12/SH-11-4/SH-11/SH",
+                "brand": "Baltais",
+                "price": 1.27,
+                "currency": "EUR",
+                "quantity": 1,
+                "hiddenAmount": "1",
+                "hiddenStep": "1"
+            }, {
+                "id": "210673",
+                "name": "Pilnpiena biezpiens Talsu 9% 300g",
+                "category": "SH-11-1-1/SH-11-1/SH-11/SH",
+                "brand": "Talsu",
+                "price": 1.32,
+                "currency": "EUR",
+                "quantity": 1,
+                "hiddenAmount": "1",
+                "hiddenStep": "1"
+            }, {
+                "id": "223984",
+                "name": "Sviests Exporta 82,5% 200g",
+                "category": "SH-11-7-17/SH-11-7/SH-11/SH",
+                "brand": "Baltais Exporta",
+                "price": 2.15,
+                "currency": "EUR",
+                "quantity": 1,
+                "hiddenAmount": "1",
+                "hiddenStep": "1"
+            }]
+        }
+    };
+
+    localStorage.clear()
+    localStorage.setItem('carts', JSON.stringify(carts));
+
+}
+
 describe('DOM with opened saved basket', function () {
     function getCarts() {
         return JSON.parse(global.localStorage.carts);
@@ -122,51 +166,11 @@ describe('DOM with empty basket', function () {
     }
 
     beforeEach(function () {
-        let carts = {
-            '13371337': {
-                id: '13371337',
-                name: 'dankmemes',
-                products: [{
-                    "id": "227060",
-                    "name": "Skābais krējums Exporta 25% 360g",
-                    "category": "SH-11-4-12/SH-11-4/SH-11/SH",
-                    "brand": "Baltais",
-                    "price": 1.27,
-                    "currency": "EUR",
-                    "quantity": 1,
-                    "hiddenAmount": "1",
-                    "hiddenStep": "1"
-                }, {
-                    "id": "210673",
-                    "name": "Pilnpiena biezpiens Talsu 9% 300g",
-                    "category": "SH-11-1-1/SH-11-1/SH-11/SH",
-                    "brand": "Talsu",
-                    "price": 1.32,
-                    "currency": "EUR",
-                    "quantity": 1,
-                    "hiddenAmount": "1",
-                    "hiddenStep": "1"
-                }, {
-                    "id": "223984",
-                    "name": "Sviests Exporta 82,5% 200g",
-                    "category": "SH-11-7-17/SH-11-7/SH-11/SH",
-                    "brand": "Baltais Exporta",
-                    "price": 2.15,
-                    "currency": "EUR",
-                    "quantity": 1,
-                    "hiddenAmount": "1",
-                    "hiddenStep": "1"
-                }]
-            }
-        };
-
-        localStorage.clear()
-        localStorage.setItem('carts', JSON.stringify(carts));
+        setupMockCarts();
         setupDOM('test/rimi-cart-empty.html')
-
         axiosMock
             .onPut("https://www.rimi.lv/e-veikals/cart/change")
-            .reply(200, {});
+            .reply(200, {})
     })
 
     it('should send a request for each product when appending a stored cart', async function () {
@@ -197,7 +201,7 @@ describe('DOM with empty basket', function () {
         }
     })
 
-    it('doesn\'t die when append cart button is spammed', async function() {
+    it('doesn\'t die when append cart button is spammed', async function () {
         let clickCount = 100;
         for (let i = 0; i < clickCount; i++) {
             getCartAppendBtn().click();
@@ -206,5 +210,33 @@ describe('DOM with empty basket', function () {
         await asyncTasks(100);
 
         chai.expect(axiosMock.history.put.length).to.equal(3 * clickCount);
+    })
+})
+
+describe('DOM with new basket with same items as mock', function () {
+    function getCartBtn() {
+        return document.querySelector('.saved-cart-popup button[name="cart"]');
+    }
+
+    function getCartAppendBtn() {
+        return getCartBtn().children[0];
+    }
+
+    beforeEach(function () {
+        setupMockCarts();
+        setupDOM('test/rimi-cart-new.html')
+        axiosMock
+            .onPut("https://www.rimi.lv/e-veikals/cart/change")
+            .reply(200, {})
+    })
+
+    it('should request 2 of all products because one already in the basket', async function () {
+        getCartAppendBtn().click();
+        await asyncTasks(100);
+
+        for (let request of axiosMock.history.put) {
+            let data = JSON.parse(request.data);
+            chai.assert.equal(data.amount, 2);
+        }
     })
 })
