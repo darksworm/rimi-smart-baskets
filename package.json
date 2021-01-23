@@ -1,0 +1,24 @@
+{
+  "name": "rimi-smart-baskets",
+  "version": "0.1.1",
+  "description": "build your cart from presets in the rimi e-store",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darksworm/rimi-smart-baskets.git"
+  },
+  "keywords": [
+    "rimi",
+    "smart",
+    "basket"
+  ],
+  "author": "darksworm",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/darksworm/rimi-smart-baskets/issues"
+  },
+  "homepage": "https://github.com/darksworm/rimi-smart-baskets#readme"
+}
