@@ -1,7 +1,8 @@
 const chai = require('chai')
 const {JSDOM} = require('jsdom')
+const {asyncTasks} = require('await-async-task')
 global.DONT_EXECUTE_USERSCRIPT = true
-const {RimiDOM, RimiAPI, CartStorage, LoadingIndicator} = require('../index')
+const {RimiDOM, RimiAPI, CartStorage, LoadingIndicator, CartBuilder} = require('../index')
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
@@ -139,7 +140,7 @@ describe('CartStorage', function () {
         })
     })
 
-    describe('storeCart', function() {
+    describe('storeCart', function () {
         let storageMock;
         let cartStorage;
 
@@ -157,24 +158,24 @@ describe('CartStorage', function () {
     })
 })
 
-describe('LoadingIndicator', function() {
+describe('LoadingIndicator', function () {
     let dom;
     let id;
     let indicator;
 
-    beforeEach(function() {
+    beforeEach(function () {
         dom = new JSDOM('');
         id = 'loader-container';
         indicator = new LoadingIndicator(dom.window.document, id);
         indicator.show();
     })
 
-    it('show creates element in dom', function() {
+    it('show creates element in dom', function () {
         let elem = dom.window.document.getElementById(id);
         chai.assert.isNotNull(elem);
     })
 
-    it('show called twice does not create another element', function() {
+    it('show called twice does not create another element', function () {
         indicator.show();
         let bodyChildCount = dom.window.document.body.childElementCount;
         chai.assert.equal(bodyChildCount, 1);
@@ -196,6 +197,49 @@ describe('LoadingIndicator', function() {
         indicator.updateText(text);
         let elem = dom.window.document.getElementById(id);
         chai.assert.include(elem.textContent, text);
+    })
+})
+
+describe('CartBuilder', function () {
+    describe('appendStoredCartItemsToActiveCart', function () {
+        let dom;
+        let api;
+        let indicator;
+
+        beforeEach(function () {
+            dom = new JSDOM('');
+            api = {
+                updateProduct: function () {
+                }
+            };
+            indicator = new LoadingIndicator(dom.window.document);
+        });
+
+        it('should not make any API calls when empty carts passed', function () {
+            let called = false;
+            let api = {
+                updateProduct: function () {
+                    called = true
+                }
+            };
+            let cartBuilder = new CartBuilder(api, indicator, dom.window)
+            cartBuilder.appendStoredCartItemsToActiveCart([], []);
+            chai.assert.isFalse(called);
+        })
+
+        it('should make one api call for each stored item', async function () {
+            let calledTimes = 0;
+            let api = {
+                updateProduct: function () {
+                    calledTimes++;
+                    return Promise.resolve();
+                }
+            };
+            let cartBuilder = new CartBuilder(api, indicator, dom.window);
+            cartBuilder.appendStoredCartItemsToActiveCart({products: [1, 2, 3]}, {products: []});
+            await asyncTasks();
+            chai.assert.equal(calledTimes, 3);
+        })
     })
 })
 
