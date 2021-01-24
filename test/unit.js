@@ -45,7 +45,7 @@ describe('RimiAPI', function () {
         })
     })
 
-    describe('addProductToCart', function () {
+    describe('updateProduct', function () {
         it('calls axios.put', function () {
             let called = false;
             let axiosMock = {
@@ -54,7 +54,7 @@ describe('RimiAPI', function () {
                 }
             };
             let api = new RimiAPI('whatever', 'nextever', axiosMock)
-            api.addProductToCart(123, 1, 1);
+            api.updateProduct(123, 1, 1);
             chai.assert.isTrue(called);
         })
     })

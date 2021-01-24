@@ -113,7 +113,7 @@ class RimiAPI {
         this.axios = axios;
     }
 
-    async addProductToCart(productId, amount = 1, step = 1) {
+    async updateProduct(productId, amount = 1, step = 1) {
         return this.axios.put(
             this._getProductChangeURL(),
             this._getProductPutData(productId, amount, step),
@@ -244,10 +244,6 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
         createCartAppendButtons();
     }
 
-    function getLang(document) {
-        return document.querySelector('html').getAttribute('lang');
-    }
-
     function getToken(document) {
         return document.querySelector("input[name='_token']").value;
     }
@@ -256,12 +252,101 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
         return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     }
 
-    function getCartRefreshURL(document) {
-        return `https://www.rimi.lv/e-veikals/${getLang(document)}/checkout/refresh`;
+    function getCartRefreshURL(window) {
+        let parts = window.location.href.split('/');
+        parts.pop();
+        return parts.join('/') + '/refresh';
+    }
+
+    function getProductsToUpdate(storedCart, currentCart) {
+        let appendProducts = JSON.parse(JSON.stringify(storedCart.products));
+
+        for (let inCart of currentCart.products) {
+            for (let stored of appendProducts) {
+                if (inCart.id === stored.id) {
+                    stored.hiddenAmount = (+stored.hiddenAmount) + (+inCart.hiddenAmount);
+                }
+            }
+        }
+
+        return appendProducts;
+    }
+
+    async function appendStoredCartItemsById(storedCartId) {
+        if (rimiDOM.isInSavedCart()) {
+            return;
+        }
+
+        await appendStoredCartItemsToActiveCart(
+            cartStorage.getStoredCart(storedCartId),
+            rimiDOM.getCurrentCart()
+        );
+    }
+
+    async function appendStoredCartItemsToActiveCart(storedCart, activeCart) {
+        let products = getProductsToUpdate(storedCart, activeCart);
+        await appendProductsToActiveCart(products);
+        refreshCart();
+    }
+
+    async function appendProductsToActiveCart(products) {
+        loadingIndicator.show();
+
+        for (const [index, product] of products.entries()) {
+            loadingIndicator.updateText(`Adding product ${index + 1} / ${products.length}`);
+            await rimiAPI.updateProduct(product.id, product.hiddenAmount, 0)
+        }
+    }
+
+    function refreshCart() {
+        loadingIndicator.updateText(`Refreshing cart`);
+        window.location = getCartRefreshURL(window)
+    }
+
+    function createCartAppendButtons() {
+        const cartAddSVG = '<svg enable-background="new 0 0 511.998 511.998" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><path d="m177.46 374.41c-34.713 0-62.951 28.238-62.951 62.951s28.238 62.951 62.951 62.951 62.951-28.238 62.951-62.951-28.238-62.951-62.951-62.951zm0 89.929c-14.874 0-26.979-12.105-26.979-26.979s12.105-26.979 26.979-26.979c14.88 0 26.979 12.105 26.979 26.979s-12.104 26.979-26.979 26.979z"/><path d="m378.9 374.41c-34.713 0-62.951 28.238-62.951 62.951s28.238 62.951 62.951 62.951 62.951-28.238 62.951-62.951-28.238-62.951-62.951-62.951zm0 89.929c-14.874 0-26.979-12.105-26.979-26.979s12.105-26.979 26.979-26.979c14.88 0 26.979 12.105 26.979 26.979s-12.105 26.979-26.979 26.979z"/><path d="m508.18 134.91c-3.405-4.359-8.633-6.907-14.167-6.907h-86.333c-9.934 0-17.986 8.052-17.986 17.986s8.052 17.986 17.986 17.986h63.341l-36.032 145.09h-290.96l-31.226-145.09h62.863v-35.972h-70.605l-17.328-80.517c-1.787-8.286-9.107-14.203-17.584-14.203h-52.159c-9.934 0-17.986 8.052-17.986 17.986s8.052 17.986 17.986 17.986h37.633l56.296 261.58c1.787 8.286 9.107 14.203 17.584 14.203h319.55c8.262 0 15.462-5.636 17.452-13.651l44.965-181.05c1.337-5.372 0.12-11.056-3.285-15.414z"/><path d="m291.37 11.69c-73.389 0-133.1 59.707-133.1 133.1s59.707 133.1 133.1 133.1 133.1-59.707 133.1-133.1-59.707-133.1-133.1-133.1zm0 230.22c-53.556 0-97.124-43.574-97.124-97.124s43.568-97.124 97.124-97.124c53.55 0 97.124 43.574 97.124 97.124 1e-3 53.55-43.567 97.124-97.124 97.124z"/><path d="m291.37 89.03c-9.934 0-17.986 8.052-17.986 17.986v75.541c0 9.934 8.052 17.986 17.986 17.986s17.986-8.052 17.986-17.986v-75.541c0-9.935-8.051-17.986-17.986-17.986z"/><path d="m328.54 126.8h-74.941c-9.934 0-17.986 8.052-17.986 17.986s8.052 17.986 17.986 17.986h74.941c9.934 0 17.986-8.052 17.986-17.986s-8.051-17.986-17.986-17.986z"/></svg>';
+
+        let cartElements = document.querySelectorAll("button[name='cart']:not(.js-new-cart)");
+
+        cartElements.forEach(cartBtnEl => {
+            let id = cartBtnEl.value;
+
+            try {
+                cartStorage.getStoredCart(id);
+            } catch (e) {
+                return;
+            }
+
+            let smartBasketAdd = document.createElement('span');
+
+            smartBasketAdd.innerHTML = cartAddSVG;
+            smartBasketAdd.className = 'smart-basket-add';
+
+            smartBasketAdd.addEventListener('click', (event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                appendStoredCartItemsById(id);
+            });
+
+            cartBtnEl.append(smartBasketAdd);
+        });
+    }
+
+    function createSaveCartButton() {
+        let el = document.createElement('button');
+        el.innerText = 'Save in "Smart Baskets"';
+        el.className = 'link-button smart-basket-save-button';
+        el.addEventListener('click', () => {
+            cartStorage.storeCart(rimiDOM.getCurrentCart());
+        });
+
+        const headingEl = document.querySelector('.cart__header > h3.cart__heading')
+        headingEl.parentNode.insertBefore(el, headingEl.nextSibling)
     }
 
     function injectCSS(document) {
         let css = document.createElement('style');
+
         css.textContent = `
             .smart-basket-save-button {
                 margin-right: 20px; 
@@ -352,92 +437,7 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
                 }
             }
         `;
-
         document.head.append(css);
-    }
-
-    async function appendCartItemsToCart(storedCartId) {
-        if (rimiDOM.isInSavedCart()) {
-            return;
-        }
-
-        loadingIndicator.show();
-
-        let currentProducts = rimiDOM.getCurrentCart().products;
-        let products = cartStorage.getStoredCart(storedCartId).products;
-
-        for (let inCart of currentProducts) {
-            for (let add of products) {
-                if (+inCart.id !== +add.id) {
-                    continue;
-                }
-
-                add.hiddenAmount = (+add.hiddenAmount) + (+inCart.hiddenAmount);
-            }
-        }
-
-        let addingCounter = 1;
-
-        for (let product of products) {
-            loadingIndicator.updateText(`Adding product ${addingCounter} / ${products.length}`)
-
-            await rimiAPI.addProductToCart(
-                product.id,
-                product.hiddenAmount,
-                0
-            )
-
-            addingCounter++
-        }
-
-        loadingIndicator.updateText(`Refreshing cart`)
-
-        window.location = getCartRefreshURL(document)
-    }
-
-    function createCartAppendButtons() {
-        const cartAddSVG = '<svg enable-background="new 0 0 511.998 511.998" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><path d="m177.46 374.41c-34.713 0-62.951 28.238-62.951 62.951s28.238 62.951 62.951 62.951 62.951-28.238 62.951-62.951-28.238-62.951-62.951-62.951zm0 89.929c-14.874 0-26.979-12.105-26.979-26.979s12.105-26.979 26.979-26.979c14.88 0 26.979 12.105 26.979 26.979s-12.104 26.979-26.979 26.979z"/><path d="m378.9 374.41c-34.713 0-62.951 28.238-62.951 62.951s28.238 62.951 62.951 62.951 62.951-28.238 62.951-62.951-28.238-62.951-62.951-62.951zm0 89.929c-14.874 0-26.979-12.105-26.979-26.979s12.105-26.979 26.979-26.979c14.88 0 26.979 12.105 26.979 26.979s-12.105 26.979-26.979 26.979z"/><path d="m508.18 134.91c-3.405-4.359-8.633-6.907-14.167-6.907h-86.333c-9.934 0-17.986 8.052-17.986 17.986s8.052 17.986 17.986 17.986h63.341l-36.032 145.09h-290.96l-31.226-145.09h62.863v-35.972h-70.605l-17.328-80.517c-1.787-8.286-9.107-14.203-17.584-14.203h-52.159c-9.934 0-17.986 8.052-17.986 17.986s8.052 17.986 17.986 17.986h37.633l56.296 261.58c1.787 8.286 9.107 14.203 17.584 14.203h319.55c8.262 0 15.462-5.636 17.452-13.651l44.965-181.05c1.337-5.372 0.12-11.056-3.285-15.414z"/><path d="m291.37 11.69c-73.389 0-133.1 59.707-133.1 133.1s59.707 133.1 133.1 133.1 133.1-59.707 133.1-133.1-59.707-133.1-133.1-133.1zm0 230.22c-53.556 0-97.124-43.574-97.124-97.124s43.568-97.124 97.124-97.124c53.55 0 97.124 43.574 97.124 97.124 1e-3 53.55-43.567 97.124-97.124 97.124z"/><path d="m291.37 89.03c-9.934 0-17.986 8.052-17.986 17.986v75.541c0 9.934 8.052 17.986 17.986 17.986s17.986-8.052 17.986-17.986v-75.541c0-9.935-8.051-17.986-17.986-17.986z"/><path d="m328.54 126.8h-74.941c-9.934 0-17.986 8.052-17.986 17.986s8.052 17.986 17.986 17.986h74.941c9.934 0 17.986-8.052 17.986-17.986s-8.051-17.986-17.986-17.986z"/></svg>';
-
-        let cartElements = document.querySelectorAll("button[name='cart']");
-
-        cartElements.forEach(cartBtnEl => {
-            let id = cartBtnEl.value;
-
-            if (id === "new") {
-                return;
-            }
-
-            try {
-                cartStorage.getStoredCart(id);
-            } catch (e) {
-                return;
-            }
-
-            let smartBasketAdd = document.createElement('span');
-
-            smartBasketAdd.innerHTML = cartAddSVG;
-            smartBasketAdd.className = 'smart-basket-add';
-
-            smartBasketAdd.addEventListener('click', (event) => {
-                event.stopPropagation();
-                event.preventDefault();
-                appendCartItemsToCart(id);
-            });
-
-            cartBtnEl.append(smartBasketAdd);
-        });
-    }
-
-    function createSaveCartButton() {
-        let el = document.createElement('button');
-        el.innerText = 'Save in "Smart Baskets"';
-        el.className = 'link-button smart-basket-save-button';
-        el.addEventListener('click', () => {
-            cartStorage.storeCart(rimiDOM.getCurrentCart());
-        });
-
-        const headingEl = document.querySelector('.cart__header > h3.cart__heading')
-        headingEl.parentNode.insertBefore(el, headingEl.nextSibling)
     }
 }
 
