@@ -1,7 +1,7 @@
 const chai = require('chai')
 const {JSDOM} = require('jsdom')
 global.DONT_EXECUTE_USERSCRIPT = true
-const {RimiDOM, RimiAPI, CartStorage} = require('../index')
+const {RimiDOM, RimiAPI, CartStorage, LoadingIndicator} = require('../index')
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
@@ -137,6 +137,65 @@ describe('CartStorage', function () {
             let retrieved = cartStorage.getStoredCart(1234);
             chai.assert.deepEqual(retrieved, stored['1234']);
         })
+    })
+
+    describe('storeCart', function() {
+        let storageMock;
+        let cartStorage;
+
+        beforeEach(function () {
+            storageMock = createStorageMock();
+            cartStorage = new CartStorage(storageMock);
+        })
+
+        it('stored cart can be retreived with getStoredCart', function () {
+            let stored = {'test': 'yes', 'id': 1234};
+            cartStorage.storeCart(stored);
+            let retrieved = cartStorage.getStoredCart(1234);
+            chai.assert.deepEqual(retrieved, stored);
+        })
+    })
+})
+
+describe('LoadingIndicator', function() {
+    let dom;
+    let id;
+    let indicator;
+
+    beforeEach(function() {
+        dom = new JSDOM('');
+        id = 'loader-container';
+        indicator = new LoadingIndicator(dom.window.document, id);
+        indicator.show();
+    })
+
+    it('show creates element in dom', function() {
+        let elem = dom.window.document.getElementById(id);
+        chai.assert.isNotNull(elem);
+    })
+
+    it('show called twice does not create another element', function() {
+        indicator.show();
+        let bodyChildCount = dom.window.document.body.childElementCount;
+        chai.assert.equal(bodyChildCount, 1);
+    })
+
+    it('should create element which has a classname', function () {
+        let elem = dom.window.document.getElementById(id);
+        let className = elem.className;
+        chai.assert.isNotEmpty(className);
+    })
+
+    it('should create element which is not empty', function () {
+        let elem = dom.window.document.getElementById(id);
+        chai.assert.notEqual(elem.childElementCount, 0);
+    })
+
+    it('updates textcontent of loader when updateText called', function () {
+        let text = "this is some random string";
+        indicator.updateText(text);
+        let elem = dom.window.document.getElementById(id);
+        chai.assert.include(elem.textContent, text);
     })
 })
 
