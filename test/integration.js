@@ -9,6 +9,7 @@ const {asyncTasks} = require('await-async-task')
 before(function () {
     global.axiosMock = new AxiosMockAdapter(axios);
     global.axios = axios;
+    global.DONT_EXECUTE_USERSCRIPT = false
 })
 
 function setupDOM(htmlPath) {
