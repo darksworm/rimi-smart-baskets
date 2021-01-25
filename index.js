@@ -159,6 +159,16 @@ class CartStorage {
         this.storage = storage;
     }
 
+    isCartStored(id) {
+        try {
+            this.getStoredCart(id);
+        } catch {
+            return false;
+        }
+
+        return true;
+    }
+
     getStoredCart(id) {
         let carts = this.getAllStoredCarts();
 
@@ -231,7 +241,7 @@ class LoadingIndicator {
 }
 
 class CartBuilder {
-    constructor (rimiAPI, loadingIndicator, window) {
+    constructor(rimiAPI, loadingIndicator, window) {
         this.rimiAPI = rimiAPI;
         this.loadingIndicator = loadingIndicator;
         this.window = window;
@@ -306,31 +316,25 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
 
         let cartElements = document.querySelectorAll("button[name='cart']:not(.js-new-cart)");
 
-        cartElements.forEach(cartBtnEl => {
-            let id = cartBtnEl.value;
-            let storedCart;
+        Array.from(cartElements)
+            .filter(x => cartStorage.isCartStored(x.value))
+            .forEach(cartButtonElement => {
+                let smartBasketAdd = document.createElement('span');
+                smartBasketAdd.innerHTML = cartAddSVG;
+                smartBasketAdd.className = 'smart-basket-add';
 
-            try {
-                storedCart = cartStorage.getStoredCart(id);
-            } catch (e) {
-                return;
-            }
+                smartBasketAdd.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    event.preventDefault();
 
-            let smartBasketAdd = document.createElement('span');
+                    cartBuilder.appendStoredCartItemsToActiveCart(
+                        cartStorage.getStoredCart(cartButtonElement.value),
+                        rimiDOM.getCurrentCart()
+                    );
+                });
 
-            smartBasketAdd.innerHTML = cartAddSVG;
-            smartBasketAdd.className = 'smart-basket-add';
-
-            smartBasketAdd.addEventListener('click', (event) => {
-                event.stopPropagation();
-                event.preventDefault();
-
-                let activeCart = rimiDOM.getCurrentCart();
-                cartBuilder.appendStoredCartItemsToActiveCart(storedCart, activeCart);
+                cartButtonElement.append(smartBasketAdd);
             });
-
-            cartBtnEl.append(smartBasketAdd);
-        });
     }
 
     function createSaveCartButton() {
