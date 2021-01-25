@@ -2,7 +2,7 @@
 // @name         Rimi Smart Baskets
 // @namespace    http://tampermonkey.net/
 // @version      __VERSION__
-// @updateURL    https://raw.githubusercontent.com/darksworm/rimi-smart-baskets/main/index.js
+// @updateURL    https://github.com/darksworm/rimi-smart-baskets/releases/latest/download/userscript.js
 // @description  __DESCRIPTION__
 // @author       darksworm
 // @match        https://www.rimi.lv/e-veikals/*/checkout/cart
