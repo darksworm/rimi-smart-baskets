@@ -24,7 +24,7 @@ export default class CartStorage {
         let carts = this._getAllStoredCarts();
 
         if (typeof carts[id] === 'undefined') {
-            let error = new Error('the requested cart is not stored!');
+            let error = new Error(`the requested cart ${id} is not stored!`);
             error.code = "CART_NOT_STORED";
             throw error;
         }

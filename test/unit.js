@@ -1,11 +1,11 @@
 import chai from "chai";
 import {JSDOM} from "jsdom";
 import {asyncTasks} from "await-async-task";
-import RimiDOM from "../src/lib/rimiDOM";
-import RimiAPI from "../src/lib/rimiAPI";
-import CartStorage from "../src/lib/cartStorage"
-import LoadingIndicator from "../src/lib/loadingIndicator"
-import CartUpdater from "../src/lib/cartUpdater";
+import RimiDOM from "../src/lib/rimi/rimiDOM";
+import RimiAPI from "../src/lib/rimi/rimiAPI";
+import CartStorage from "../src/lib/cart/cartStorage"
+import LoadingIndicator from "../src/lib/ui/loadingIndicator"
+import CartUpdater from "../src/lib/cart/cartUpdater";
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
