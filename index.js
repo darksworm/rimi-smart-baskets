@@ -302,9 +302,29 @@ class CartUpdateListBuilder {
     }
 }
 
+class RimiStateLoader {
+    constructor(window) {
+        this.window = window;
+    }
+
+    getToken() {
+        return this.window.document.querySelector("input[name='_token']").value;
+    }
+
+    getCSRFToken() {
+        return this.window.document.querySelector('meta[name="csrf-token"]')
+            .getAttribute('content');
+    }
+
+    getLanguage() {
+        return this.window.document.querySelector('html').getAttribute('lang');
+    }
+}
+
 if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT === false) {
+    let rimiState = new RimiStateLoader(window);
     let rimiDOM = new RimiDOM(window);
-    let rimiAPI = new RimiAPI(getToken(document), getCSRFToken(document), axios);
+    let rimiAPI = new RimiAPI(rimiState.getToken(), rimiState.getCSRFToken(), axios);
 
     let cartStorage = new CartStorage(localStorage);
     let loadingIndicator = new LoadingIndicator(document);
@@ -331,22 +351,8 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
         createCartAppendButtons();
     }
 
-    function _getCartRefreshURL() {
-        let parts = window.location.href.split('/');
-        parts.pop();
-        return parts.join('/') + '/refresh';
-    }
-
     function refreshCart() {
-        window.location = _getCartRefreshURL();
-    }
-
-    function getToken(document) {
-        return document.querySelector("input[name='_token']").value;
-    }
-
-    function getCSRFToken(document) {
-        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        window.location = `https://www.rimi.lv/e-veikals/${rimiState.getLanguage()}/checkout/refresh`;
     }
 
     function createCartAppendButtons() {
