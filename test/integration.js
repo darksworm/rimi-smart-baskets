@@ -1,10 +1,10 @@
-const chai = require('chai')
-const fs = require('fs')
-const {JSDOM} = require('jsdom')
-require('mock-local-storage')
-const axios = require("axios");
-const AxiosMockAdapter = require("axios-mock-adapter")
-const {asyncTasks} = require('await-async-task')
+import chai from "chai";
+import fs from "fs";
+import {JSDOM} from "jsdom";
+import axios from "axios";
+import AxiosMockAdapter from "axios-mock-adapter";
+import {asyncTasks} from "await-async-task";
+import 'mock-local-storage';
 
 before(function () {
     global.axiosMock = new AxiosMockAdapter(axios);
@@ -20,12 +20,17 @@ function setupDOM(htmlPath) {
 
     global.document = dom.window.document
     global.window = dom.window
-    global.window.localStorage = global.localStorage
+    Object.defineProperty(global.window, 'localStorage', {
+        value: global.localStorage,
+        configurable: true,
+        enumerable: true,
+        writable: true
+    })
 
     global.axiosMock.resetHandlers()
     global.axiosMock.resetHistory()
 
-    const userscriptJS = fs.readFileSync('index.js', 'utf-8')
+    const userscriptJS = fs.readFileSync('dist/userscript.js', 'utf-8')
     global.window.eval(userscriptJS)
 }
 

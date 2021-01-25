@@ -2,9 +2,10 @@
   "name": "rimi-smart-baskets",
   "version": "0.1.2",
   "description": "build your cart from presets in the rimi e-store",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha"
+    "build": "webpack",
+    "test": "webpack >/dev/null && ./node_modules/mocha/bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -22,12 +23,21 @@
   },
   "homepage": "https://github.com/darksworm/rimi-smart-baskets#readme",
   "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/plugin-transform-runtime": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/register": "^7.12.10",
     "await-async-task": "^2.0.2",
     "axios": "^0.21.1",
     "axios-mock-adapter": "^1.19.0",
     "chai": "^4.2.0",
     "jsdom": "^16.4.0",
     "mocha": "^8.2.1",
-    "mock-local-storage": "^1.1.17"
-  }
+    "mock-local-storage": "^1.1.17",
+    "webpack": "^5.17.0",
+    "webpack-auto-inject-version": "^1.2.2",
+    "webpack-cli": "^4.4.0",
+    "webpack-shell-plugin-next": "^2.1.1"
+  },
+  "dependencies": {}
 }

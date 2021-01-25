@@ -1,8 +1,11 @@
-const chai = require('chai')
-const {JSDOM} = require('jsdom')
-const {asyncTasks} = require('await-async-task')
-global.DONT_EXECUTE_USERSCRIPT = true
-const {RimiDOM, RimiAPI, CartStorage, LoadingIndicator, CartUpdater} = require('../index')
+import chai from "chai";
+import {JSDOM} from "jsdom";
+import {asyncTasks} from "await-async-task";
+import RimiDOM from "../src/lib/rimiDOM";
+import RimiAPI from "../src/lib/rimiAPI";
+import CartStorage from "../src/lib/cartStorage"
+import LoadingIndicator from "../src/lib/loadingIndicator"
+import CartUpdater from "../src/lib/cartUpdater";
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
