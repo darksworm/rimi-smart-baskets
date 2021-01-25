@@ -97,28 +97,6 @@ describe('CartStorage', function () {
         })
     })
 
-    describe('getAllStoredCarts', function () {
-        let storageMock;
-        let cartStorage;
-
-        beforeEach(function () {
-            storageMock = createStorageMock();
-            cartStorage = new CartStorage(storageMock);
-        })
-
-        it('with empty storage does not return any carts', function () {
-            let carts = cartStorage.getAllStoredCarts();
-            chai.assert.isEmpty(carts);
-        });
-
-        it('with carts in storage, returns them', function () {
-            let stored = {'1': '3'};
-            storageMock.data.carts = JSON.stringify(stored);
-            let retrieved = cartStorage.getAllStoredCarts();
-            chai.assert.deepEqual(retrieved, stored);
-        })
-    })
-
     describe('getStoredCart', function () {
         let storageMock;
         let cartStorage;

@@ -170,7 +170,7 @@ class CartStorage {
     }
 
     getStoredCart(id) {
-        let carts = this.getAllStoredCarts();
+        let carts = this._getAllStoredCarts();
 
         if (typeof carts[id] === 'undefined') {
             let error = new Error('the requested cart is not stored!');
@@ -181,18 +181,18 @@ class CartStorage {
         return carts[id];
     }
 
-    getAllStoredCarts() {
+    storeCart(cart) {
+        let storedCarts = this._getAllStoredCarts();
+        storedCarts[cart.id] = cart;
+        this.storage.setItem('carts', this._encodeCarts(storedCarts));
+    }
+
+    _getAllStoredCarts() {
         let carts = this.storage.getItem('carts');
         if (typeof carts === 'undefined' || carts === null) {
             return {};
         }
         return this._decodeCarts(carts);
-    }
-
-    storeCart(cart) {
-        let storedCarts = this.getAllStoredCarts();
-        storedCarts[cart.id] = cart;
-        this.storage.setItem('carts', this._encodeCarts(storedCarts));
     }
 
     _encodeCarts(carts) {
