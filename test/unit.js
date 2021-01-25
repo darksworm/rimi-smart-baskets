@@ -2,7 +2,7 @@ const chai = require('chai')
 const {JSDOM} = require('jsdom')
 const {asyncTasks} = require('await-async-task')
 global.DONT_EXECUTE_USERSCRIPT = true
-const {RimiDOM, RimiAPI, CartStorage, LoadingIndicator, CartBuilder} = require('../index')
+const {RimiDOM, RimiAPI, CartStorage, LoadingIndicator, CartUpdater} = require('../index')
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
@@ -200,7 +200,7 @@ describe('LoadingIndicator', function () {
     })
 })
 
-describe('CartBuilder', function () {
+describe('CartUpdater', function () {
     describe('appendStoredCartItemsToActiveCart', function () {
         let dom;
         let api;
@@ -222,8 +222,8 @@ describe('CartBuilder', function () {
                     called = true
                 }
             };
-            let cartBuilder = new CartBuilder(api, indicator, dom.window)
-            cartBuilder.appendStoredCartItemsToActiveCart([], []);
+            let cartUpdater = new CartUpdater(api, indicator, dom.window)
+            cartUpdater.appendProducts([], []);
             chai.assert.isFalse(called);
         })
 
@@ -235,8 +235,8 @@ describe('CartBuilder', function () {
                     return Promise.resolve();
                 }
             };
-            let cartBuilder = new CartBuilder(api, indicator, dom.window);
-            cartBuilder.appendStoredCartItemsToActiveCart({products: [1, 2, 3]}, {products: []});
+            let cartUpdater = new CartUpdater(api, indicator, dom.window);
+            cartUpdater.appendProducts([1, 2, 3], []);
             await asyncTasks();
             chai.assert.equal(calledTimes, 3);
         })

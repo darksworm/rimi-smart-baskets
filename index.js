@@ -240,20 +240,20 @@ class LoadingIndicator {
     }
 }
 
-class CartBuilder {
+class CartUpdater {
     constructor(rimiAPI, loadingIndicator, window) {
         this.rimiAPI = rimiAPI;
         this.loadingIndicator = loadingIndicator;
         this.window = window;
     }
 
-    async appendStoredCartItemsToActiveCart(storedCart, activeCart) {
-        let products = this._getProductsToUpdate(storedCart, activeCart);
-        await this._appendProductsToActiveCart(products);
+    async appendProducts(productsToAdd, productsAlreadyAdded) {
+        let products = this._getProductsToUpdate(productsToAdd, productsAlreadyAdded);
+        await this._updateProducts(products);
         this._refreshCart();
     }
 
-    async _appendProductsToActiveCart(products) {
+    async _updateProducts(products) {
         this.loadingIndicator.show();
 
         for (const [index, product] of products.entries()) {
@@ -268,13 +268,13 @@ class CartBuilder {
         return parts.join('/') + '/refresh';
     }
 
-    _getProductsToUpdate(storedCart, currentCart) {
-        let appendProducts = JSON.parse(JSON.stringify(storedCart.products));
+    _getProductsToUpdate(productsToAdd, productsAlreadyAdded) {
+        let appendProducts = JSON.parse(JSON.stringify(productsToAdd));
 
-        for (let inCart of currentCart.products) {
+        for (let alreadyAdded of productsAlreadyAdded) {
             for (let stored of appendProducts) {
-                if (inCart.id === stored.id) {
-                    stored.hiddenAmount = (+stored.hiddenAmount) + (+inCart.hiddenAmount);
+                if (alreadyAdded.id === stored.id) {
+                    stored.hiddenAmount = (+stored.hiddenAmount) + (+alreadyAdded.hiddenAmount);
                 }
             }
         }
@@ -293,7 +293,7 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
     let rimiAPI = new RimiAPI(getToken(document), getCSRFToken(document), axios);
     let cartStorage = new CartStorage(localStorage);
     let loadingIndicator = new LoadingIndicator(document);
-    let cartBuilder = new CartBuilder(rimiAPI, loadingIndicator, window);
+    let cartUpdater = new CartUpdater(rimiAPI, loadingIndicator, window);
 
     injectCSS(document);
 
@@ -327,9 +327,9 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
                     event.stopPropagation();
                     event.preventDefault();
 
-                    cartBuilder.appendStoredCartItemsToActiveCart(
-                        cartStorage.getStoredCart(cartButtonElement.value),
-                        rimiDOM.getCurrentCart()
+                    cartUpdater.appendProducts(
+                        cartStorage.getStoredCart(cartButtonElement.value).products,
+                        rimiDOM.getCurrentCart().products
                     );
                 });
 
@@ -345,7 +345,7 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
             cartStorage.storeCart(rimiDOM.getCurrentCart());
         });
 
-        const headingEl = document.querySelector('.cart__header > h3.cart__heading')
+        const headingEl = document.querySelector('.cart__header > h3.cart__heading');
         headingEl.parentNode.insertBefore(el, headingEl.nextSibling)
     }
 
@@ -447,5 +447,5 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
 }
 
 if (typeof module !== 'undefined') {
-    module.exports = {RimiDOM, RimiAPI, CartStorage, LoadingIndicator, CartBuilder};
+    module.exports = {RimiDOM, RimiAPI, CartStorage, LoadingIndicator, CartUpdater};
 }

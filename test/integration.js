@@ -176,14 +176,14 @@ describe('DOM with empty basket', function () {
 
     it('should send a request for each product when appending a stored cart', async function () {
         getCartAppendBtn().click();
-        await asyncTasks(100);
+        await asyncTasks();
 
         chai.expect(axiosMock.history.put.length).to.equal(3);
     })
 
     it('should send requests which match rimi API format', async function () {
         getCartAppendBtn().click();
-        await asyncTasks(100);
+        await asyncTasks();
 
         for (let request of axiosMock.history.put) {
             let data = JSON.parse(request.data);
@@ -193,7 +193,7 @@ describe('DOM with empty basket', function () {
 
     it('should use the correct CSRF token', async function () {
         getCartAppendBtn().click();
-        await asyncTasks(100);
+        await asyncTasks();
 
         for (let request of axiosMock.history.put) {
             let data = JSON.parse(request.data);
@@ -203,12 +203,11 @@ describe('DOM with empty basket', function () {
     })
 
     it('doesn\'t die when append cart button is spammed', async function () {
-        let clickCount = 100;
+        let clickCount = 25;
         for (let i = 0; i < clickCount; i++) {
             getCartAppendBtn().click();
         }
-
-        await asyncTasks(100);
+        await asyncTasks();
 
         chai.expect(axiosMock.history.put.length).to.equal(3 * clickCount);
     })
@@ -233,7 +232,7 @@ describe('DOM with new basket with same items as mock', function () {
 
     it('should request 2 of all products because one already in the basket', async function () {
         getCartAppendBtn().click();
-        await asyncTasks(100);
+        await asyncTasks();
 
         for (let request of axiosMock.history.put) {
             let data = JSON.parse(request.data);
