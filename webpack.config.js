@@ -6,7 +6,7 @@ const fs = require('fs');
 module.exports = {
     plugins: [
         new WebpackShellPluginNext({
-            onBuildExit: {
+            onBuildEnd: {
                 scripts: [
                     () => {
                         const scriptHeader = fs.readFileSync('src/scriptHeader.js', 'utf-8');
@@ -38,4 +38,12 @@ module.exports = {
         minimize: false
     },
     mode: 'production',
+    module: {
+        rules: [
+            {
+                test: /\.(css|svg)$/i,
+                use: 'raw-loader',
+            },
+        ],
+    }
 };
