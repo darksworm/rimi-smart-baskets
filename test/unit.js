@@ -223,7 +223,7 @@ describe('CartUpdater', function () {
                 }
             };
             let cartUpdater = new CartUpdater(api, indicator, dom.window)
-            cartUpdater.updateProducts([]);
+            cartUpdater.doAction([]);
             chai.assert.isFalse(called);
         })
 
@@ -236,7 +236,7 @@ describe('CartUpdater', function () {
                 }
             };
             let cartUpdater = new CartUpdater(api, indicator, dom.window);
-            cartUpdater.updateProducts([1, 2, 3]);
+            cartUpdater.doAction(() => {}, [1, 2, 3]);
             await asyncTasks();
             chai.assert.equal(calledTimes, 3);
         })

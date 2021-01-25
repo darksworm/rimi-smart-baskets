@@ -241,31 +241,44 @@ class LoadingIndicator {
 }
 
 class CartUpdater {
-    constructor(rimiAPI, loadingIndicator, window) {
+    constructor(rimiAPI) {
         this.rimiAPI = rimiAPI;
-        this.loadingIndicator = loadingIndicator;
-        this.window = window;
     }
 
-    async updateProducts(products) {
-        this.loadingIndicator.show();
-
+    async doAction(onProgress, products) {
         for (const [index, product] of products.entries()) {
-            this.loadingIndicator.updateText(`Adding product ${index + 1} / ${products.length}`);
+            onProgress(index + 1, products.length);
             await this.rimiAPI.updateProduct(product.id, product.hiddenAmount, 0)
         }
-        this._refreshCart();
+    }
+}
+
+class ActionProgressWrapper {
+    constructor(actionable) {
+        this.callbacks = {
+            onStart: () => {},
+            onProgress: () => {},
+            onComplete: () => {}
+        };
+        this.actionable = actionable;
     }
 
-    _getCartRefreshURL() {
-        let parts = this.window.location.href.split('/');
-        parts.pop();
-        return parts.join('/') + '/refresh';
+    onStart(fun) {
+        this.callbacks.onStart = fun;
     }
 
-    _refreshCart() {
-        this.loadingIndicator.updateText(`Refreshing cart`);
-        this.window.location = this._getCartRefreshURL()
+    onProgress(fun) {
+        this.callbacks.onProgress = fun;
+    }
+
+    onComplete(fun) {
+        this.callbacks.onComplete = fun;
+    }
+
+    async doAction() {
+        this.callbacks.onStart();
+        await this.actionable.doAction(this.callbacks.onProgress, ...arguments);
+        this.callbacks.onComplete();
     }
 }
 
@@ -277,11 +290,11 @@ class CartUpdateListBuilder {
     }
 
     _sumAmountsForOverlappingProducts(productsToAdd, alreadyAddedProducts) {
-        alreadyAddedProducts.forEach(alreadyAdded => {
+        alreadyAddedProducts.forEach(alreadyAdded =>
             productsToAdd
                 .filter(toAdd => toAdd.id === alreadyAdded.id)
-                .forEach(toAdd => toAdd.hiddenAmount = +toAdd.hiddenAmount + +alreadyAdded.hiddenAmount);
-        });
+                .forEach(toAdd => toAdd.hiddenAmount = +toAdd.hiddenAmount + +alreadyAdded.hiddenAmount)
+        );
     }
 
     _createProductsCopy(products) {
@@ -296,8 +309,19 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
     let cartStorage = new CartStorage(localStorage);
     let loadingIndicator = new LoadingIndicator(document);
 
-    let cartUpdater = new CartUpdater(rimiAPI, loadingIndicator, window);
     let updateListBuilder = new CartUpdateListBuilder();
+    let cartUpdater = new ActionProgressWrapper(new CartUpdater(rimiAPI));
+
+    cartUpdater.onStart(() => {
+        loadingIndicator.show()
+    });
+    cartUpdater.onProgress((done, total) => {
+        loadingIndicator.updateText(`Adding product ${done} / ${total}`)
+    });
+    cartUpdater.onComplete(() => {
+        loadingIndicator.updateText('Refreshing cart');
+        refreshCart();
+    });
 
     injectCSS(document);
 
@@ -305,6 +329,16 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
         createSaveCartButton();
     } else {
         createCartAppendButtons();
+    }
+
+    function _getCartRefreshURL() {
+        let parts = window.location.href.split('/');
+        parts.pop();
+        return parts.join('/') + '/refresh';
+    }
+
+    function refreshCart() {
+        window.location = _getCartRefreshURL();
     }
 
     function getToken(document) {
@@ -336,7 +370,7 @@ if (typeof DONT_EXECUTE_USERSCRIPT === 'undefined' || DONT_EXECUTE_USERSCRIPT ==
                         rimiDOM.getCurrentCart().products
                     );
 
-                    cartUpdater.updateProducts(productsToUpdate);
+                    cartUpdater.doAction(productsToUpdate);
                 });
 
                 cartButtonElement.append(smartBasketAdd);
