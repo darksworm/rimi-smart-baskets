@@ -25,4 +25,4 @@
 `npm run build` will emit the script to `dist/userscript.js`
 
 ## Licensing
-This software is licensed under the (GNU General Public License v3.0)[https://github.com/darksworm/rimi-smart-baskets/blob/main/LICENSE.md].
+This software is licensed under the [GNU General Public License v3.0](https://github.com/darksworm/rimi-smart-baskets/blob/main/LICENSE.md).
