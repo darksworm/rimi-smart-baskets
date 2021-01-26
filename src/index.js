@@ -1,6 +1,6 @@
 import Rimi from "./lib/rimi/rimi";
 import CartStorage from "./lib/cart/cartStorage";
-import SaveCartButton from "./lib/ui/saveCartButton";
+import {SaveCartButtonCreator} from "./lib/ui/saveCartButton";
 import AppendCartButtonCreator from "./lib/ui/appendCartButtonCreator";
 import CartUpdateProgressIndicator from "./lib/ui/cartUpdateProgressIndicator";
 import CSSInjector from "./lib/generic/cssInjector"
@@ -23,24 +23,9 @@ import cartSVG from './static/cart.svg'
     new CSSInjector(document, notyfStylesheet).inject();
 
     if (rimi.dom.isInSavedCart()) {
-        function storeCurrentCart() {
-            let currentCart = rimi.dom.getCurrentCart();
-            let cartAlreadyStored = cartStorage.isCartStored(currentCart.id);
-
-            cartStorage.storeCart(currentCart);
-
-            let message = `Cart "${currentCart.name}" ${cartAlreadyStored ? 'has been updated' : 'is now stored'} in "Smart Baskets"`;
-            notificationService.success(message, 2000);
-        }
-
-        let currentCartId = rimi.dom.getCurrentCart().id;
-        let currentCartIsStored = cartStorage.isCartStored(currentCartId);
-
-        new SaveCartButton(
-            document,
-            storeCurrentCart,
-            currentCartIsStored ? 'Update cart in "Smart Baskets"' : 'Save cart in "Smart Baskets"'
-        ).place();
+        const creator = new SaveCartButtonCreator(document, cartStorage, rimi.dom);
+        creator.setNotificationHandler(notificationService);
+        creator.createButton();
     } else {
         const creator = new AppendCartButtonCreator(document, cartStorage, rimi);
         const progressHandler = new CartUpdateProgressIndicator(document, rimi.refresh.bind(rimi));
