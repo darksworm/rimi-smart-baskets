@@ -70,27 +70,37 @@ function setupMockCarts() {
                 "hiddenAmount": "1",
                 "hiddenStep": "1"
             }]
+        },
+        '1101456706': {
+            id: '1101456706',
+            name: 'KETO-CHILLI',
+            products: [
+                {
+                    "id": "227060",
+                    "name": "Skābais krējums Exporta 25% 360g",
+                    "category": "SH-11-4-12/SH-11-4/SH-11/SH",
+                    "brand": "Baltais",
+                    "price": 1.27,
+                    "currency": "EUR",
+                    "quantity": 1,
+                    "hiddenAmount": "1",
+                    "hiddenStep": "1"
+                }
+            ]
         }
     };
 
     localStorage.clear()
     localStorage.setItem('carts', JSON.stringify(carts));
-
 }
 
-describe('DOM with opened saved basket', function () {
+describe('DOM with opened saved basket which is not stored', function () {
     function getCarts() {
         return JSON.parse(global.localStorage.carts);
     }
 
     function saveCurrentCart() {
-        let allButtons = document.getElementsByTagName("button")
-        let saveButton = Array.from(allButtons)
-            .find(function (el) {
-                return el.innerText === "Save in \"Smart Baskets\""
-            });
-
-        saveButton.click();
+        document.querySelector('.smart-basket-save-button').click();
     }
 
     function getFirstCart() {
@@ -108,11 +118,11 @@ describe('DOM with opened saved basket', function () {
         chai.assert.isEmpty(localStorage);
     });
 
-    it('should contain `Save in "Smart Baskets"` button', function () {
+    it('should contain `Save cart in "Smart Baskets"` button', function () {
         let allButtons = document.getElementsByTagName("button")
         let saveButton = Array.from(allButtons)
             .find(function (el) {
-                return el.innerText === "Save in \"Smart Baskets\""
+                return el.innerText === "Save cart in \"Smart Baskets\""
             })
         chai.assert.exists(saveButton)
     })
@@ -159,6 +169,38 @@ describe('DOM with opened saved basket', function () {
         let afterCartProductCount = getFirstCart().products.length;
 
         chai.assert.equal(afterCartProductCount, initialCartProductCount - 1);
+    })
+
+    describe('after saving cart', function () {
+        beforeEach(async function () {
+            localStorage.clear();
+            setupDOM('test/rimi-cart-saved-cart-opened.html');
+            saveCurrentCart();
+        });
+
+        function getSuccessMessageElement() {
+            return document.querySelector(".rimi-smart-basket-notification.success");
+        }
+
+        it('should display a success message when cart saved', async function () {
+            let successMessage = getSuccessMessageElement();
+            chai.assert.isNotNull(successMessage);
+        })
+
+        it('displayed success message should contain the saved baskets name', function () {
+            let successMessage = getSuccessMessageElement().textContent;
+            chai.assert.include(successMessage, "KETO-CHILLI");
+        })
+
+        it('displayed success message should have a greenish backdrop', function () {
+            let successMessage = getSuccessMessageElement().children[1];
+            let color = successMessage.style.background;
+            let rgb = color.substring(4, color.length - 1)
+                .replace(/ /g, '')
+                .split(',');
+            chai.assert.isAbove(+rgb[1], +rgb[0], 'green should be greater than red');
+            chai.assert.isAbove(+rgb[1], +rgb[2], 'green should be greater than blue');
+        })
     })
 })
 
@@ -215,6 +257,44 @@ describe('DOM with empty basket', function () {
         await asyncTasks();
 
         chai.expect(axiosMock.history.put.length).to.equal(3 * clickCount);
+    })
+})
+
+describe('DOM with opened saved basket that is already stored', function () {
+    function saveCurrentCart() {
+        document.querySelector('.smart-basket-save-button').click();
+    }
+
+    beforeEach(function () {
+        setupMockCarts();
+        setupDOM('test/rimi-cart-saved-cart-opened.html')
+    })
+
+    it('should display smart basket add button with update caption', function () {
+        const btnText = document.querySelector('.smart-basket-save-button').innerText
+        chai.assert.equal(btnText, 'Update cart in "Smart Baskets"')
+    })
+
+    function getSuccessMessageElement() {
+        return document.querySelector(".rimi-smart-basket-notification.success");
+    }
+
+    it('should display a success message when cart saved', function () {
+        saveCurrentCart();
+        let successMessage = getSuccessMessageElement();
+        chai.assert.isNotNull(successMessage);
+    })
+
+    it('displayed success message should contain the saved baskets name', function () {
+        saveCurrentCart();
+        let successMessage = getSuccessMessageElement().textContent;
+        chai.assert.include(successMessage, "KETO-CHILLI");
+    })
+
+    it('displayed success message should contain the word "updated"', function () {
+        saveCurrentCart();
+        let successMessage = getSuccessMessageElement().textContent;
+        chai.assert.include(successMessage.toLowerCase(), "updated");
     })
 })
 

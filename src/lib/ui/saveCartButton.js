@@ -1,12 +1,13 @@
 export default class SaveCartButton {
-    constructor(document, onClick) {
+    constructor(document, onClick, caption) {
         this.document = document;
         this.onClick = onClick;
+        this.caption = caption;
     }
 
     _create() {
         let button = document.createElement('button');
-        button.innerText = 'Save in "Smart Baskets"';
+        button.innerText = this.caption;
         button.className = 'link-button smart-basket-save-button';
         button.addEventListener('click', this.onClick);
         return button;
