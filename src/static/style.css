@@ -31,8 +31,8 @@
     backdrop-filter: blur(5px);
 }
 
-.loader-text {
-    font-size: 13px;
+#loader-text {
+    font-size: 22px;
     color: #363d40;
 }
 
