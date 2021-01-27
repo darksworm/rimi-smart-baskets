@@ -42,9 +42,6 @@ jobs:
           release_name: ${{ steps.package-version.outputs.current-version }}
           draft: false
           prerelease: false
-          
-      - run: echo ${{ steps.repo.outputs.release }}
-      - run: echo ${{ steps.package-version.outputs.current-version }}
 
       - name: Upload Release Asset
         if: steps.repo.outputs.release != steps.package-version.outputs.current-version
