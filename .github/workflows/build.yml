@@ -32,7 +32,7 @@ jobs:
         uses: martinbeentjes/npm-get-version-action@master
 
       - name: Create Release
-        if: ${{ steps.repo.outputs.release }} !== ${{ steps.package-version.outputs.current-version }}
+        if: ${{ steps.repo.outputs.release }} != ${{ steps.package-version.outputs.current-version }}
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -44,7 +44,7 @@ jobs:
           prerelease: false
 
       - name: Upload Release Asset
-        if: ${{ steps.repo.outputs.release }} !== ${{ steps.package-version.outputs.current-version }}
+        if: ${{ steps.repo.outputs.release }} != ${{ steps.package-version.outputs.current-version }}
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
