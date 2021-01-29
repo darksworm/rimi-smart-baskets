@@ -16,6 +16,10 @@ export default class RimiDOM {
         return cart;
     }
 
+    isCurrentCartEmpty() {
+        return this.getCurrentCart().products.length === 0;
+    }
+
     isInSavedCart() {
         const yourCartText = ['Your cart', 'Pasūtījuma grozs', 'Корзина'];
         const actualText = this._getCurrentCartTitle();

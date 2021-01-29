@@ -3,6 +3,7 @@ import CartStorage from "./lib/cart/cartStorage";
 
 import SaveCartButtonCreator from "./lib/ui/saveCartButtonCreator";
 import AppendCartButtonCreator from "./lib/ui/appendCartButtonCreator";
+import CartAbandonmentConfirmer from "./lib/ui/cartAbandonmentConfirmer";
 
 import CSSInjector from "./lib/generic/cssInjector"
 
@@ -39,35 +40,6 @@ import cartSVG from './static/cart.svg'
         creator.createButtons(cartSVG);
     }
 
-    let rimiCartButtons = document.querySelectorAll("button[name='cart']");
-    Array.from(rimiCartButtons).forEach((button) => {
-        button.addEventListener('click', (event) => {
-            if (event.target.ignoreClickOverride || rimi.dom.isInSavedCart()) {
-                return;
-            }
-
-            if (rimi.dom.getCurrentCart().products.length === 0) {
-                return;
-            }
-
-            event.stopPropagation();
-            event.preventDefault();
-
-            sa2.fire({
-                text: 'Are you sure you want to abandon your current basket?',
-                showCancelButton: true,
-                confirmButtonText: `Yes`,
-                customClass: {
-                    container: 'smart-basket-confirm-action',
-                    confirmButton: 'smart-basket-accept',
-                    cancelButton: 'smart-basket-cancel'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    event.target.ignoreShit = true;
-                    event.target.click();
-                }
-            })
-        })
-    });
+    const confirmer = new CartAbandonmentConfirmer(document, rimi.dom, sa2);
+    confirmer.bindToCartChangeButtons();
 })();

@@ -341,11 +341,15 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
         global.window.scrollTo = () => {};
         global.navigator = {};
 
-        getOtherCartButton().click();
+        getSavedCartButton().click();
     });
 
-    function getOtherCartButton() {
+    function getSavedCartButton() {
         return document.querySelector(".saved-cart-popup > li > button");
+    }
+
+    function getOtherSavedCartButton() {
+        return document.querySelector(".saved-cart-popup > li:nth-child(2) > button");
     }
 
     function getAcceptButton() {
@@ -371,15 +375,24 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
 
     it('should ask for confirmation when trying to open another cart after previous attempt was cancelled', async function () {
         getCancelButton().click();
-        getOtherCartButton().click();
+        await asyncTasks();
+        getSavedCartButton().click();
         await asyncTasks();
 
         chai.assert.isNotNull(getConfirmBox());
     })
 
+    it('confirmation box should appear when cancelled and different cart button clicked', async function () {
+        getCancelButton().click();
+        await asyncTasks();
+        getOtherSavedCartButton().click();
+        await asyncTasks();
+        chai.assert.isNotNull(getConfirmBox());
+    })
+
     it('should not reclick the button when cancelled', async function () {
         let reclicked = false;
-        getOtherCartButton().addEventListener('click', function (event) {
+        getSavedCartButton().addEventListener('click', function (event) {
             event.preventDefault();
             reclicked = true;
         });
@@ -392,7 +405,7 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
 
     it('should reclick the button when confirmation is given', async function () {
         let reclicked = false;
-        getOtherCartButton().addEventListener('click', function (event) {
+        getSavedCartButton().addEventListener('click', function (event) {
             event.preventDefault();
             reclicked = true;
         });
