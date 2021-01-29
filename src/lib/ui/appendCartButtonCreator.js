@@ -16,7 +16,7 @@ export default class AppendCartButtonCreator {
         return new CartAppendElementCreator(this.document, appendClickHandler);
     }
 
-    createCartAppendButtons(buttonContents) {
+    createButtons(buttonContents) {
         const buttonCreator = this.createAppendButtonCreator();
         let buttons = this.getStoredCartButtons();
         buttonCreator.addToRimiButtons(buttons, buttonContents);

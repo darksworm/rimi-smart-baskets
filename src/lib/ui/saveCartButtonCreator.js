@@ -1,4 +1,4 @@
-export default class SaveCartButton {
+export class SaveCartButton {
     constructor(document, onClick, caption) {
         this.document = document;
         this.onClick = onClick;
@@ -20,7 +20,7 @@ export default class SaveCartButton {
     }
 }
 
-export class SaveCartButtonCreator {
+export default class SaveCartButtonCreator {
     constructor(document, cartStorage, rimiDOM) {
         this.document = document;
         this.rimiDOM = rimiDOM;

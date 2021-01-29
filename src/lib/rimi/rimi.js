@@ -6,6 +6,7 @@ export default class Rimi {
         this.window = window;
         this.api = new RimiAPI(this._getToken(), this._getCSRFToken(), axios);
         this.dom = new RimiDOM(window);
+        this.refreshing = false;
     }
 
     _getToken() {
@@ -22,7 +23,12 @@ export default class Rimi {
     }
 
     refresh() {
+        this.refreshing = true;
         this.window.location = `https://www.rimi.lv/e-veikals/${this._getLanguage()}/checkout/refresh`;
+    }
+
+    isRefreshing() {
+        return this.refreshing;
     }
 }
 

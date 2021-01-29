@@ -9,7 +9,6 @@ import 'mock-local-storage';
 before(function () {
     global.axiosMock = new AxiosMockAdapter(axios);
     global.axios = axios;
-    global.DONT_EXECUTE_USERSCRIPT = false
 })
 
 function setupDOM(htmlPath) {
@@ -323,5 +322,84 @@ describe('DOM with new basket with same items as mock', function () {
             let data = JSON.parse(request.data);
             chai.assert.equal(data.amount, 2);
         }
+    })
+
+    it('should not ask for confirmation when trying to open another cart', function () {
+        let otherCartBtn = document.querySelector(".saved-cart-popup > li > button");
+        otherCartBtn.click();
+        let confirmBox = document.querySelector(".smart-basket-confirm-action");
+        chai.assert.isNull(confirmBox);
+    })
+})
+
+describe('DOM with new basket which is not empty and is not in local or rimi storage', function () {
+    beforeEach(function () {
+        setupDOM('test/rimi-cart-new.html');
+
+        global.Element = window.Element;
+        global.DOMParser = window.DOMParser;
+        global.window.scrollTo = () => {};
+        global.navigator = {};
+
+        getOtherCartButton().click();
+    });
+
+    function getOtherCartButton() {
+        return document.querySelector(".saved-cart-popup > li > button");
+    }
+
+    function getAcceptButton() {
+        return document.querySelector('.smart-basket-accept');
+    }
+
+    function getCancelButton() {
+        return document.querySelector('.smart-basket-cancel');
+    }
+
+    function getConfirmBox() {
+        return document.querySelector(".smart-basket-confirm-action");
+    }
+
+    it('should ask for confirmation when trying to open another cart', async function () {
+        chai.assert.isNotNull(getConfirmBox());
+    })
+
+    it('confirmation box should disappear when cancelled', function () {
+        getCancelButton().click();
+        chai.assert.isNull(getConfirmBox());
+    })
+
+    it('should ask for confirmation when trying to open another cart after previous attempt was cancelled', async function () {
+        getCancelButton().click();
+        getOtherCartButton().click();
+        await asyncTasks();
+
+        chai.assert.isNotNull(getConfirmBox());
+    })
+
+    it('should not reclick the button when cancelled', async function () {
+        let reclicked = false;
+        getOtherCartButton().addEventListener('click', function (event) {
+            event.preventDefault();
+            reclicked = true;
+        });
+
+        getCancelButton().click();
+        await asyncTasks();
+
+        chai.assert.isFalse(reclicked);
+    })
+
+    it('should reclick the button when confirmation is given', async function () {
+        let reclicked = false;
+        getOtherCartButton().addEventListener('click', function (event) {
+            event.preventDefault();
+            reclicked = true;
+        });
+
+        getAcceptButton().click();
+        await asyncTasks();
+
+        chai.assert.isTrue(reclicked);
     })
 })
