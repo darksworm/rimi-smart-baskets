@@ -8,15 +8,16 @@ import CartAbandonmentConfirmer from "./lib/ui/cartAbandonmentConfirmer";
 import CSSInjector from "./lib/generic/cssInjector"
 
 import CartUpdateProgressIndicator from "./lib/ui/cartUpdateProgressIndicator";
-import NotificationService from "./lib/generic/notificationService";
+import NotificationService from "./lib/ui/notificationService";
 
-import sa2 from 'sweetalert2/dist/sweetalert2.js'
+import sweetalert2 from 'sweetalert2/dist/sweetalert2.js'
 import {Notyf} from 'notyf';
 
 import sa2css from 'sweetalert2/dist/sweetalert2.css'
 import notyfStylesheet from 'notyf/notyf.min.css'
 import stylesheet from './static/style.css'
 import cartSVG from './static/cart.svg'
+import PromptService from "./lib/ui/promptService";
 
 (function () {
     "use strict";
@@ -24,6 +25,7 @@ import cartSVG from './static/cart.svg'
     const rimi = new Rimi(window, axios);
     const cartStorage = new CartStorage(localStorage);
     const notificationService = new NotificationService(new Notyf());
+    const promptService = new PromptService(sweetalert2);
 
     new CSSInjector(document, stylesheet).inject();
     new CSSInjector(document, notyfStylesheet).inject();
@@ -40,6 +42,6 @@ import cartSVG from './static/cart.svg'
         creator.createButtons(cartSVG);
     }
 
-    const confirmer = new CartAbandonmentConfirmer(document, rimi.dom, sa2);
+    const confirmer = new CartAbandonmentConfirmer(document, rimi.dom, promptService);
     confirmer.bindToCartChangeButtons();
 })();
