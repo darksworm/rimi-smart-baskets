@@ -1,6 +1,6 @@
 {
   "name": "rimi-smart-baskets",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "build your cart from presets in the rimi e-store",
   "main": "src/index.js",
   "scripts": {
