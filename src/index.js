@@ -1,26 +1,35 @@
-import Rimi from "./lib/rimi/rimi";
-import CartStorage from "./lib/cart/cartStorage";
-import {SaveCartButtonCreator} from "./lib/ui/saveCartButton";
-import AppendCartButtonCreator from "./lib/ui/appendCartButtonCreator";
-import CartUpdateProgressIndicator from "./lib/ui/cartUpdateProgressIndicator";
+import sweetalert2 from 'sweetalert2/dist/sweetalert2.js'
+import {Notyf} from 'notyf';
+
 import CSSInjector from "./lib/generic/cssInjector"
 
-import NotificationService from "./lib/generic/notificationService";
-import { Notyf } from 'notyf';
+import Rimi from "./lib/rimi/rimi";
+import CartStorage from "./lib/cart/cartStorage";
 
-import stylesheet from './static/style.css'
-import notyfStylesheet from 'notyf/notyf.min.css'
+import SaveCartButtonCreator from "./lib/ui/saveCartButtonCreator";
+import AppendCartButtonCreator from "./lib/ui/appendCartButtonCreator";
+import CartAbandonmentConfirmer from "./lib/ui/cartAbandonmentConfirmer";
+
+import CartUpdateProgressIndicator from "./lib/ui/cartUpdateProgressIndicator";
+import NotificationService from "./lib/ui/notificationService";
+import PromptService from "./lib/ui/promptService";
+
+import sweetalert2CSS from 'sweetalert2/dist/sweetalert2.css'
+import notyfCSS from 'notyf/notyf.min.css'
+import smartBasketCSS from './static/style.css'
 import cartSVG from './static/cart.svg'
 
-(function() {
+(function () {
     "use strict";
 
     const rimi = new Rimi(window, axios);
     const cartStorage = new CartStorage(localStorage);
-    const notificationService = new NotificationService(new Notyf());
 
-    new CSSInjector(document, stylesheet).inject();
-    new CSSInjector(document, notyfStylesheet).inject();
+    const notificationService = new NotificationService(new Notyf());
+    const promptService = new PromptService(sweetalert2);
+
+    let externalStylesheets = [smartBasketCSS, notyfCSS, sweetalert2CSS];
+    new CSSInjector(document).injectMultiple(externalStylesheets);
 
     if (rimi.dom.isInSavedCart()) {
         const creator = new SaveCartButtonCreator(document, cartStorage, rimi.dom);
@@ -30,6 +39,9 @@ import cartSVG from './static/cart.svg'
         const creator = new AppendCartButtonCreator(document, cartStorage, rimi);
         const progressHandler = new CartUpdateProgressIndicator(document, rimi.refresh.bind(rimi));
         creator.setProgressHandler(progressHandler);
-        creator.createCartAppendButtons(cartSVG);
+        creator.createButtons(cartSVG);
     }
+
+    const confirmer = new CartAbandonmentConfirmer(document, rimi.dom, promptService);
+    confirmer.bindToCartChangeButtons();
 })();

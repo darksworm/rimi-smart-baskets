@@ -1,6 +1,6 @@
 {
   "name": "rimi-smart-baskets",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "build your cart from presets in the rimi e-store",
   "main": "src/index.js",
   "scripts": {
@@ -41,6 +41,7 @@
     "webpack-shell-plugin-next": "^2.1.1"
   },
   "dependencies": {
-    "notyf": "^3.9.0"
+    "notyf": "^3.9.0",
+    "sweetalert2": "^10.13.3"
   }
 }

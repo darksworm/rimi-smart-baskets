@@ -1,6 +1,6 @@
 export default class NotificationService {
-    constructor(notificationServiceProvider) {
-        this.provider = notificationServiceProvider;
+    constructor(notificationProvider) {
+        this.provider = notificationProvider;
     }
 
     success(message, duration) {
