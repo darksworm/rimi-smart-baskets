@@ -6,7 +6,7 @@ export default class PromptService {
     promptCartAbandonment() {
         return new Promise((resolve, reject) => {
             this.promptProvider.fire({
-                text: 'Are you sure you want to abandon your current basket?',
+                text: 'Abandon current cart?',
                 showCancelButton: true,
                 confirmButtonText: `Yes`,
                 customClass: {
