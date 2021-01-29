@@ -1,12 +1,17 @@
 export default class CSSInjector {
-    constructor(document, content) {
+    constructor(document) {
         this.document = document;
-        this.content = content;
     }
 
-    inject() {
+    injectMultiple(stylesheets) {
+        for (let sheet of stylesheets) {
+            this.inject(sheet);
+        }
+    }
+
+    inject(content) {
         let element = this.document.createElement('style');
-        element.textContent = this.content;
+        element.textContent = content;
         this.document.head.append(element);
     }
 }
