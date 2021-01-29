@@ -25,6 +25,13 @@ export default class CartAbandonmentConfirmer {
         button.addEventListener('click', this.buttonClickHandler.bind(this));
     }
 
+    buttonClickHandler(event) {
+        if (this.isUserAboutToAbandonUnsavedCart()) {
+            this.stopEventExecution(event);
+            this.askForAbandonmentConfirmation(event.target);
+        }
+    }
+
     isUserAboutToAbandonUnsavedCart() {
         if (this.userAcceptedAbandonment) {
             return false;
@@ -37,11 +44,9 @@ export default class CartAbandonmentConfirmer {
         return false === this.rimiDOM.isCurrentCartEmpty();
     }
 
-    buttonClickHandler(event) {
-        if (this.isUserAboutToAbandonUnsavedCart()) {
-            this.stopEventExecution(event);
-            this.askForAbandonmentConfirmation(event.target);
-        }
+    stopEventExecution(event) {
+        event.stopPropagation();
+        event.preventDefault();
     }
 
     askForAbandonmentConfirmation(clickedCartElement) {
@@ -55,11 +60,6 @@ export default class CartAbandonmentConfirmer {
     abandonCart(clickedCartElement) {
         this.userAcceptedAbandonment = true;
         clickedCartElement.click();
-    }
-
-    stopEventExecution(event) {
-        event.stopPropagation();
-        event.preventDefault();
     }
 }
 
