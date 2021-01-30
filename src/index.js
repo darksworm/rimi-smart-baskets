@@ -9,6 +9,7 @@ import CartStorage from "./lib/cart/cartStorage";
 import SaveCartButtonCreator from "./lib/ui/saveCartButtonCreator";
 import AppendCartButtonCreator from "./lib/ui/appendCartButtonCreator";
 import CartAbandonmentConfirmer from "./lib/ui/cartAbandonmentConfirmer";
+import CartUpdateValidator from "./lib/cart/cartUpdateValidator";
 
 import CartUpdateProgressIndicator from "./lib/ui/cartUpdateProgressIndicator";
 import NotificationService from "./lib/ui/notificationService";
@@ -45,23 +46,12 @@ import cartSVG from './static/cart.svg'
     const confirmer = new CartAbandonmentConfirmer(document, rimi.dom, promptService);
     confirmer.bindToCartChangeButtons();
 
-    let lastCartUpdate = cartStorage.popCartUpdate();
-    if (lastCartUpdate) {
-        let currentProducts = rimi.dom.getCurrentCart().products;
-        let productStates = lastCartUpdate.map((p) => {
-            return {
-                product: p,
-                updated: currentProducts
-                    .filter(c => c.id === p.id)
-                    .filter(c => +c.hiddenAmount === +p.hiddenAmount)
-                    .length > 0
-            }
-        });
-
-        let missing = productStates.filter(x => x.updated === false);
-        if (missing.length) {
-            let names = missing.map(m => m.product.name);
-            promptService.notifyProductAdditionFailed(names);
+    let cartUpdate = cartStorage.popCartUpdate();
+    if (cartUpdate) {
+        let validator = new CartUpdateValidator(rimi.dom.getCurrentCart().products, cartUpdate);
+        if (validator.hasProductUpdateFailed()) {
+            let missingProductNames = validator.getMissingProductNames();
+            promptService.notifyProductAdditionFailed(missingProductNames);
         }
     }
 })();
