@@ -10,6 +10,8 @@ import {asyncTasks} from "await-async-task";
 import AxiosMockAdapter from "axios-mock-adapter";
 import 'mock-local-storage';
 
+const script = fs.readFileSync('dist/userscript.js', 'utf-8');
+
 before(function () {
     global.axiosMock = new AxiosMockAdapter(axios);
     global.axios = axios;
@@ -29,6 +31,8 @@ function setupDOM(htmlPath) {
 
     global.document = dom.window.document;
     global.window = dom.window;
+
+    global.window.scrollTo = () => {};
     Object.defineProperty(global.window, 'localStorage', {
         value: global.localStorage,
         configurable: true,
@@ -36,7 +40,11 @@ function setupDOM(htmlPath) {
         writable: true
     });
 
-    const script = fs.readFileSync('dist/userscript.js', 'utf-8');
+    global.Element = window.Element;
+    global.HTMLElement = window.HTMLElement;
+    global.DOMParser = window.DOMParser;
+    global.navigator = {};
+
     global.window.eval(script)
 }
 
@@ -97,6 +105,10 @@ function setupMockCarts() {
     };
 
     localStorage.setItem('carts', JSON.stringify(carts));
+}
+
+function getMissingProductWarningElement() {
+    return document.querySelector('.smart-basket-missing-product-warning');
 }
 
 describe('DOM with opened saved basket which is not stored', function () {
@@ -266,20 +278,22 @@ describe('DOM with empty basket', function () {
         expect(axiosMock.history.put.length).to.equal(3 * clickCount);
     });
 
-    describe('when added saved cart products do not appear in opened cart', function() {
+    it('should not create a missing product warning popup', function () {
+        expect(getMissingProductWarningElement()).to.be.a('null');
+    });
+
+    describe('when added saved cart products do not appear in opened cart', async function () {
         beforeEach(async function () {
             setupMockCarts();
             setupDOM('test/rimi-cart-empty.html');
             mockCartChangeEndpoint();
             getCartAppendBtn().click();
             await asyncTasks();
-
-            // fake reload by setting up dom anew
-            setupDOM('test/rimi-cart-empty.html');
+            fakeRefresh();
         });
 
-        function getWarningPopupElement() {
-            return document.querySelector('.smart-basket-missing-product-warning');
+        function fakeRefresh() {
+            setupDOM('test/rimi-cart-empty.html');
         }
 
         function getAddedCartProducts() {
@@ -288,24 +302,32 @@ describe('DOM with empty basket', function () {
         }
 
         function getWarningPopupOKButton() {
-            let childElements = Array.from(getWarningPopupElement().querySelectorAll('*'));
-            return childElements.filter(x => x.innerText === 'OK')[0];
+            return document.querySelector('.smart-basket-accept');
         }
 
-        it('should create a warning popup', function() {
-            expect(getWarningPopupElement()).to.not.be.a('null');
+        it('should create a warning popup', async function () {
+            expect(getMissingProductWarningElement()).to.not.be.a('null');
         });
 
-        it('the displayed warning popup should contain names of all the missing products', function() {
-           let warningPopupContents = getWarningPopupElement().textContent;
-           let missingProductNames = getAddedCartProducts().map(x => x.name);
-           expect(warningPopupContents).to.include.all.members(missingProductNames);
+        it('the displayed warning popup should contain word fail', function () {
+            let warningPopupContents = getMissingProductWarningElement().textContent;
+            expect(warningPopupContents.toLowerCase()).to.include('fail');
         });
 
-        it('the displayed warning popup should close when OK button clicked', async function() {
+        it('the displayed warning popup should contain names of all the missing products', function () {
+            let warningPopupContents = getMissingProductWarningElement().textContent;
+            let missingProductNames = getAddedCartProducts().map(x => x.name);
+            expect(missingProductNames.every(x => warningPopupContents.includes(x))).to.be.true;
+        });
+
+        it('the displayed warning popup should close when OK button clicked', function () {
             getWarningPopupOKButton().click();
-            await asyncTasks();
-            expect(getWarningPopupElement()).to.be.a('null');
+            expect(getMissingProductWarningElement()).to.be.a('null');
+        });
+
+        it('after another refresh, the popup should not appear', function () {
+            fakeRefresh();
+            expect(getMissingProductWarningElement()).to.be.a('null');
         });
     });
 });
@@ -375,12 +397,20 @@ describe('DOM with new basket with same items as mock', function () {
         }
     });
 
-    it('should not ask for confirmation when trying to open another cart', function () {
+    it('should ask for confirmation when trying to open another cart', function () {
         let otherCartBtn = document.querySelector(".saved-cart-popup > li > button");
         otherCartBtn.click();
         let confirmBox = document.querySelector(".smart-basket-confirm-action");
-        expect(confirmBox).to.be.a('null');
-    })
+        expect(confirmBox).to.not.be.a('null');
+    });
+
+    it('should create a missing product warning popup if failed to add products', async function () {
+        getCartAppendBtn().click();
+        await asyncTasks();
+
+        setupDOM('test/rimi-cart-new.html');
+        expect(getMissingProductWarningElement()).to.not.be.a('null');
+    });
 });
 
 describe('DOM with new basket which is not empty and is not in local or rimi storage', function () {
@@ -388,14 +418,8 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
 
     beforeEach(function () {
         setupDOM('test/rimi-cart-new.html');
-
-        global.Element = window.Element;
-        global.DOMParser = window.DOMParser;
-        global.window.scrollTo = () => {};
-        global.navigator = {};
-
-        clickSpyCaughtClick = false;
         getSavedCartButton().click();
+        clickSpyCaughtClick = false;
     });
 
     function addClickSpy() {

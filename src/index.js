@@ -37,11 +37,31 @@ import cartSVG from './static/cart.svg'
         creator.createButton();
     } else {
         const creator = new AppendCartButtonCreator(document, cartStorage, rimi);
-        const progressHandler = new CartUpdateProgressIndicator(document, rimi.refresh.bind(rimi));
-        creator.setProgressHandler(progressHandler);
+        const progressIndicator = new CartUpdateProgressIndicator(document, rimi.refresh.bind(rimi));
+        creator.setProgressHandler(progressIndicator);
         creator.createButtons(cartSVG);
     }
 
     const confirmer = new CartAbandonmentConfirmer(document, rimi.dom, promptService);
     confirmer.bindToCartChangeButtons();
+
+    let lastCartUpdate = cartStorage.popCartUpdate();
+    if (lastCartUpdate) {
+        let currentProducts = rimi.dom.getCurrentCart().products;
+        let productStates = lastCartUpdate.map((p) => {
+            return {
+                product: p,
+                updated: currentProducts
+                    .filter(c => c.id === p.id)
+                    .filter(c => +c.hiddenAmount === +p.hiddenAmount)
+                    .length > 0
+            }
+        });
+
+        let missing = productStates.filter(x => x.updated === false);
+        if (missing.length) {
+            let names = missing.map(m => m.product.name);
+            promptService.notifyProductAdditionFailed(names);
+        }
+    }
 })();
