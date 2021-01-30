@@ -216,12 +216,16 @@ describe('DOM with empty basket', function () {
         return getCartBtn().children[0];
     }
 
-    beforeEach(function () {
-        setupMockCarts();
-        setupDOM('test/rimi-cart-empty.html');
+    function mockCartChangeEndpoint() {
         axiosMock
             .onPut("https://www.rimi.lv/e-veikals/cart/change")
             .reply(200, {})
+    }
+
+    beforeEach(function () {
+        setupMockCarts();
+        setupDOM('test/rimi-cart-empty.html');
+        mockCartChangeEndpoint();
     });
 
     it('should send a request for each product when appending a stored cart', async function () {
@@ -260,7 +264,50 @@ describe('DOM with empty basket', function () {
         await asyncTasks();
 
         expect(axiosMock.history.put.length).to.equal(3 * clickCount);
-    })
+    });
+
+    describe('when added saved cart products do not appear in opened cart', function() {
+        beforeEach(async function () {
+            setupMockCarts();
+            setupDOM('test/rimi-cart-empty.html');
+            mockCartChangeEndpoint();
+            getCartAppendBtn().click();
+            await asyncTasks();
+
+            // fake reload by setting up dom anew
+            setupDOM('test/rimi-cart-empty.html');
+        });
+
+        function getWarningPopupElement() {
+            return document.querySelector('.smart-basket-missing-product-warning');
+        }
+
+        function getAddedCartProducts() {
+            let carts = JSON.parse(localStorage.getItem('carts'));
+            return Array.from(carts['13371337'].products);
+        }
+
+        function getWarningPopupOKButton() {
+            let childElements = Array.from(getWarningPopupElement().querySelectorAll('*'));
+            return childElements.filter(x => x.innerText === 'OK')[0];
+        }
+
+        it('should create a warning popup', function() {
+            expect(getWarningPopupElement()).to.not.be.a('null');
+        });
+
+        it('the displayed warning popup should contain names of all the missing products', function() {
+           let warningPopupContents = getWarningPopupElement().textContent;
+           let missingProductNames = getAddedCartProducts().map(x => x.name);
+           expect(warningPopupContents).to.include.all.members(missingProductNames);
+        });
+
+        it('the displayed warning popup should close when OK button clicked', async function() {
+            getWarningPopupOKButton().click();
+            await asyncTasks();
+            expect(getWarningPopupElement()).to.be.a('null');
+        });
+    });
 });
 
 describe('DOM with opened saved basket that is already stored', function () {
