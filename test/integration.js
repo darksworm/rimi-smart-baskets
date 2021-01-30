@@ -1,36 +1,43 @@
-import chai from "chai";
-import fs from "fs";
+import {expect} from "chai";
+import {before, beforeEach, describe, it} from "mocha";
+
 import {JSDOM} from "jsdom";
 import axios from "axios";
-import AxiosMockAdapter from "axios-mock-adapter";
+
+import fs from "fs";
 import {asyncTasks} from "await-async-task";
+
+import AxiosMockAdapter from "axios-mock-adapter";
 import 'mock-local-storage';
 
 before(function () {
     global.axiosMock = new AxiosMockAdapter(axios);
     global.axios = axios;
-})
+});
+
+beforeEach(function () {
+    global.axiosMock.resetHandlers();
+    global.axiosMock.resetHistory();
+    global.localStorage.clear();
+});
 
 function setupDOM(htmlPath) {
-    const mockCartHTML = fs.readFileSync(htmlPath, 'utf-8')
+    const mockCartHTML = fs.readFileSync(htmlPath, 'utf-8');
     const dom = new JSDOM(mockCartHTML, {
         'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
-    })
+    });
 
-    global.document = dom.window.document
-    global.window = dom.window
+    global.document = dom.window.document;
+    global.window = dom.window;
     Object.defineProperty(global.window, 'localStorage', {
         value: global.localStorage,
         configurable: true,
         enumerable: true,
         writable: true
-    })
+    });
 
-    global.axiosMock.resetHandlers()
-    global.axiosMock.resetHistory()
-
-    const userscriptJS = fs.readFileSync('dist/userscript.js', 'utf-8')
-    global.window.eval(userscriptJS)
+    const script = fs.readFileSync('dist/userscript.js', 'utf-8');
+    global.window.eval(script)
 }
 
 function setupMockCarts() {
@@ -89,7 +96,6 @@ function setupMockCarts() {
         }
     };
 
-    localStorage.clear()
     localStorage.setItem('carts', JSON.stringify(carts));
 }
 
@@ -109,33 +115,32 @@ describe('DOM with opened saved basket which is not stored', function () {
     }
 
     beforeEach(function () {
-        localStorage.clear()
         setupDOM('test/rimi-cart-saved-cart-opened.html')
-    })
+    });
 
     it('shouldn\'t write to localStorage on inject', function () {
-        chai.assert.isEmpty(localStorage);
+        expect(localStorage).to.be.empty;
     });
 
     it('should contain `Save cart in "Smart Baskets"` button', function () {
-        let allButtons = document.getElementsByTagName("button")
+        let allButtons = document.getElementsByTagName("button");
         let saveButton = Array.from(allButtons)
             .find(function (el) {
                 return el.innerText === "Save cart in \"Smart Baskets\""
-            })
-        chai.assert.exists(saveButton)
-    })
+            });
+        expect(saveButton).to.exist;
+    });
 
     it('cart buttons in selector should not contain children', function () {
-        let cartButtons = document.querySelectorAll(".saved-cart-popup > li > button:not(.js-new-cart)")
+        let cartButtons = document.querySelectorAll(".saved-cart-popup > li > button:not(.js-new-cart)");
         for (let button of cartButtons) {
-            chai.assert.equal(0, button.children.length);
+            expect(button.children.length).to.equal(0);
         }
-    })
+    });
 
     it('should create record in localstorage when save button clicked', function () {
         saveCurrentCart();
-        chai.assert.isNotEmpty(localStorage.carts);
+        expect(localStorage.carts).to.not.be.empty;
     });
 
     it('should store correct product count when save button clicked', function () {
@@ -144,16 +149,16 @@ describe('DOM with opened saved basket which is not stored', function () {
         let firstCartProductCount = getFirstCart().products.length;
         let DOMProductCount = document.querySelectorAll(".js-product-container.in-cart").length;
 
-        chai.assert.equal(DOMProductCount, firstCartProductCount);
-    })
+        expect(DOMProductCount).to.equal(firstCartProductCount);
+    });
 
     it('should store the cart indexed by a number when save button clicked', function () {
         saveCurrentCart();
         let cartIndexes = Object.keys(getCarts());
         for (let index of cartIndexes) {
-            chai.assert.notStrictEqual(index, +index);
+            expect(index).to.equal((+index).toString());
         }
-    })
+    });
 
     it('should change product count if cart saved, then a product is removed, then saved again', function () {
         saveCurrentCart();
@@ -167,12 +172,11 @@ describe('DOM with opened saved basket which is not stored', function () {
 
         let afterCartProductCount = getFirstCart().products.length;
 
-        chai.assert.equal(afterCartProductCount, initialCartProductCount - 1);
-    })
+        expect(afterCartProductCount).to.equal(initialCartProductCount - 1);
+    });
 
     describe('after saving cart', function () {
         beforeEach(async function () {
-            localStorage.clear();
             setupDOM('test/rimi-cart-saved-cart-opened.html');
             saveCurrentCart();
         });
@@ -183,13 +187,13 @@ describe('DOM with opened saved basket which is not stored', function () {
 
         it('should display a success message when cart saved', async function () {
             let successMessage = getSuccessMessageElement();
-            chai.assert.isNotNull(successMessage);
-        })
+            expect(successMessage).to.exist;
+        });
 
         it('displayed success message should contain the saved baskets name', function () {
             let successMessage = getSuccessMessageElement().textContent;
-            chai.assert.include(successMessage, "KETO-CHILLI");
-        })
+            expect(successMessage).to.include('KETO-CHILLI');
+        });
 
         it('displayed success message should have a greenish backdrop', function () {
             let successMessage = getSuccessMessageElement().children[1];
@@ -197,11 +201,11 @@ describe('DOM with opened saved basket which is not stored', function () {
             let rgb = color.substring(4, color.length - 1)
                 .replace(/ /g, '')
                 .split(',');
-            chai.assert.isAbove(+rgb[1], +rgb[0], 'green should be greater than red');
-            chai.assert.isAbove(+rgb[1], +rgb[2], 'green should be greater than blue');
+            expect(+rgb[1], 'green should be greater than red').to.be.above(+rgb[0]);
+            expect(+rgb[1], 'green should be greater than blue').to.be.above(+rgb[2]);
         })
     })
-})
+});
 
 describe('DOM with empty basket', function () {
     function getCartBtn() {
@@ -214,18 +218,18 @@ describe('DOM with empty basket', function () {
 
     beforeEach(function () {
         setupMockCarts();
-        setupDOM('test/rimi-cart-empty.html')
+        setupDOM('test/rimi-cart-empty.html');
         axiosMock
             .onPut("https://www.rimi.lv/e-veikals/cart/change")
             .reply(200, {})
-    })
+    });
 
     it('should send a request for each product when appending a stored cart', async function () {
         getCartAppendBtn().click();
         await asyncTasks();
 
-        chai.expect(axiosMock.history.put.length).to.equal(3);
-    })
+        expect(axiosMock.history.put.length).to.equal(3);
+    });
 
     it('should send requests which match rimi API format', async function () {
         getCartAppendBtn().click();
@@ -233,9 +237,9 @@ describe('DOM with empty basket', function () {
 
         for (let request of axiosMock.history.put) {
             let data = JSON.parse(request.data);
-            chai.assert.hasAllKeys(data, ['_method', '_token', 'amount', 'step', 'product'])
+            expect(data).to.have.keys(['_method', '_token', 'amount', 'step', 'product']);
         }
-    })
+    });
 
     it('should use the correct CSRF token', async function () {
         getCartAppendBtn().click();
@@ -243,10 +247,10 @@ describe('DOM with empty basket', function () {
 
         for (let request of axiosMock.history.put) {
             let data = JSON.parse(request.data);
-            chai.assert.equal(data["_token"], "redacted");
-            chai.assert.equal(request.headers["x-csrf-token"], "redacted");
+            expect(data["_token"]).to.equal("redacted");
+            expect(request.headers["x-csrf-token"]).to.equal("redacted");
         }
-    })
+    });
 
     it('doesn\'t die when append cart button is spammed', async function () {
         let clickCount = 25;
@@ -255,47 +259,47 @@ describe('DOM with empty basket', function () {
         }
         await asyncTasks();
 
-        chai.expect(axiosMock.history.put.length).to.equal(3 * clickCount);
+        expect(axiosMock.history.put.length).to.equal(3 * clickCount);
     })
-})
+});
 
 describe('DOM with opened saved basket that is already stored', function () {
     function saveCurrentCart() {
         document.querySelector('.smart-basket-save-button').click();
     }
 
-    beforeEach(function () {
-        setupMockCarts();
-        setupDOM('test/rimi-cart-saved-cart-opened.html')
-    })
-
-    it('should display smart basket add button with update caption', function () {
-        const btnText = document.querySelector('.smart-basket-save-button').innerText
-        chai.assert.equal(btnText, 'Update cart in "Smart Baskets"')
-    })
-
     function getSuccessMessageElement() {
         return document.querySelector(".rimi-smart-basket-notification.success");
     }
 
+    beforeEach(function () {
+        setupMockCarts();
+        setupDOM('test/rimi-cart-saved-cart-opened.html')
+    });
+
+    it('should display smart basket add button with update caption', function () {
+        const btnText = document.querySelector('.smart-basket-save-button').innerText;
+        expect(btnText).to.equal('Update cart in "Smart Baskets"');
+    });
+
     it('should display a success message when cart saved', function () {
         saveCurrentCart();
         let successMessage = getSuccessMessageElement();
-        chai.assert.isNotNull(successMessage);
-    })
+        expect(successMessage).to.not.be.a('null');
+    });
 
     it('displayed success message should contain the saved baskets name', function () {
         saveCurrentCart();
         let successMessage = getSuccessMessageElement().textContent;
-        chai.assert.include(successMessage, "KETO-CHILLI");
-    })
+        expect(successMessage).to.include('KETO-CHILLI');
+    });
 
     it('displayed success message should contain the word "updated"', function () {
         saveCurrentCart();
         let successMessage = getSuccessMessageElement().textContent;
-        chai.assert.include(successMessage.toLowerCase(), "updated");
+        expect(successMessage.toLowerCase()).to.include("updated");
     })
-})
+});
 
 describe('DOM with new basket with same items as mock', function () {
     function getCartBtn() {
@@ -308,11 +312,11 @@ describe('DOM with new basket with same items as mock', function () {
 
     beforeEach(function () {
         setupMockCarts();
-        setupDOM('test/rimi-cart-new.html')
+        setupDOM('test/rimi-cart-new.html');
         axiosMock
             .onPut("https://www.rimi.lv/e-veikals/cart/change")
             .reply(200, {})
-    })
+    });
 
     it('should request 2 of all products because one already in the basket', async function () {
         getCartAppendBtn().click();
@@ -320,19 +324,21 @@ describe('DOM with new basket with same items as mock', function () {
 
         for (let request of axiosMock.history.put) {
             let data = JSON.parse(request.data);
-            chai.assert.equal(data.amount, 2);
+            expect(data.amount).to.equal(2);
         }
-    })
+    });
 
     it('should not ask for confirmation when trying to open another cart', function () {
         let otherCartBtn = document.querySelector(".saved-cart-popup > li > button");
         otherCartBtn.click();
         let confirmBox = document.querySelector(".smart-basket-confirm-action");
-        chai.assert.isNull(confirmBox);
+        expect(confirmBox).to.be.a('null');
     })
-})
+});
 
 describe('DOM with new basket which is not empty and is not in local or rimi storage', function () {
+    let clickSpyCaughtClick = false;
+
     beforeEach(function () {
         setupDOM('test/rimi-cart-new.html');
 
@@ -341,8 +347,16 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
         global.window.scrollTo = () => {};
         global.navigator = {};
 
+        clickSpyCaughtClick = false;
         getSavedCartButton().click();
     });
+
+    function addClickSpy() {
+        getSavedCartButton().addEventListener('click', function (event) {
+            event.preventDefault();
+            clickSpyCaughtClick = true;
+        });
+    }
 
     function getSavedCartButton() {
         return document.querySelector(".saved-cart-popup > li > button");
@@ -365,13 +379,13 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
     }
 
     it('should ask for confirmation when trying to open another cart', async function () {
-        chai.assert.isNotNull(getConfirmBox());
-    })
+        expect(getConfirmBox()).to.not.be.a('null');
+    });
 
     it('confirmation box should disappear when cancelled', function () {
         getCancelButton().click();
-        chai.assert.isNull(getConfirmBox());
-    })
+        expect(getConfirmBox()).to.be.a('null');
+    });
 
     it('should ask for confirmation when trying to open another cart after previous attempt was cancelled', async function () {
         getCancelButton().click();
@@ -379,40 +393,31 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
         getSavedCartButton().click();
         await asyncTasks();
 
-        chai.assert.isNotNull(getConfirmBox());
-    })
+        expect(getConfirmBox()).to.not.be.a('null');
+    });
 
     it('confirmation box should appear when cancelled and different cart button clicked', async function () {
         getCancelButton().click();
         await asyncTasks();
         getOtherSavedCartButton().click();
         await asyncTasks();
-        chai.assert.isNotNull(getConfirmBox());
-    })
+
+        expect(getConfirmBox()).to.not.be.a('null');
+    });
 
     it('should not reclick the button when cancelled', async function () {
-        let reclicked = false;
-        getSavedCartButton().addEventListener('click', function (event) {
-            event.preventDefault();
-            reclicked = true;
-        });
-
+        addClickSpy();
         getCancelButton().click();
         await asyncTasks();
 
-        chai.assert.isFalse(reclicked);
-    })
+        expect(clickSpyCaughtClick).to.equal(false);
+    });
 
     it('should reclick the button when confirmation is given', async function () {
-        let reclicked = false;
-        getSavedCartButton().addEventListener('click', function (event) {
-            event.preventDefault();
-            reclicked = true;
-        });
-
+        addClickSpy();
         getAcceptButton().click();
         await asyncTasks();
 
-        chai.assert.isTrue(reclicked);
+        expect(clickSpyCaughtClick).to.equal(true);
     })
-})
+});
