@@ -5,17 +5,13 @@ export default class CartUpdateValidator {
     }
 
     hasProductUpdateFailed() {
-        return this._getMissingProducts().length !== 0;
+        return this.getFailedProducts().length !== 0;
     }
 
-    getMissingProductNames() {
-        let missing = this._getMissingProducts();
-        return missing.map(m => m.product.name);
-    }
-
-    _getMissingProducts() {
+    getFailedProducts() {
         let productStates = this._getProductUpdateStates();
-        return productStates.filter(x => x.updated === false);
+        let nonUpdatedStates = productStates.filter(x => x.updated === false);
+        return nonUpdatedStates.map(x => x.product);
     }
 
     _getProductUpdateStates() {

@@ -20,11 +20,13 @@ export default class PromptService {
         })
     }
 
-    notifyProductAdditionFailed(failedToAddProducts) {
+    notifyProductAdditionFailed(body, footer) {
         return new Promise((resolve, reject) => {
             this.promptProvider.fire({
+                icon: 'error',
                 title: 'Failed to add products!',
-                text: failedToAddProducts.join(', '),
+                html: body,
+                footer: footer,
                 showCancelButton: false,
                 confirmButtonText: 'OK',
                 customClass: {

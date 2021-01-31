@@ -50,8 +50,23 @@ import cartSVG from './static/cart.svg'
     if (cartUpdate) {
         let validator = new CartUpdateValidator(rimi.dom.getCurrentCart().products, cartUpdate);
         if (validator.hasProductUpdateFailed()) {
-            let missingProductNames = validator.getMissingProductNames();
-            promptService.notifyProductAdditionFailed(missingProductNames);
+            let failedProducts = validator.getFailedProducts();
+
+            let ul = document.createElement('ul');
+            for (let product of failedProducts) {
+                let li = document.createElement('li');
+                let a = document.createElement('a');
+                a.href = "https://www.rimi.lv/e-veikals/lv/produkti/p/" + product.id;
+                a.target = "_blank";
+                a.innerHTML = product.name;
+                li.appendChild(a);
+                ul.appendChild(li);
+            }
+            
+            let body = ul.outerHTML;
+            let footer = '<div style="text-align: center;">These products could not be added because they are unavailable or you\'ve reached their purchasing limit.</div>';
+
+            promptService.notifyProductAdditionFailed(body, footer);
         }
     }
 })();
