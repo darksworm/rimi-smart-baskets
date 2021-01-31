@@ -7,7 +7,7 @@ export default class AppendCartButtonCreator {
         this.document = document;
         this.cartStorage = cartStorage;
         this.rimi = rimi;
-        this.cartUpdater = new ActionProgressWrapper(new CartUpdater(this.rimi.api));
+        this.cartUpdater = new ActionProgressWrapper(new CartUpdater(this.rimi.api, cartStorage));
     }
 
     createAppendButtonCreator() {

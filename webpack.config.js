@@ -41,7 +41,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.(css|svg)$/i,
+                test: /\.(css|svg|html)$/i,
                 use: 'raw-loader',
             },
         ],

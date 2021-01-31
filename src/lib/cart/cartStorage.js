@@ -35,7 +35,20 @@ export default class CartStorage {
     storeCart(cart) {
         let storedCarts = this._getAllStoredCarts();
         storedCarts[cart.id] = cart;
-        this.storage.setItem('carts', this._encodeCarts(storedCarts));
+        this.storage.setItem('carts', this._encode(storedCarts));
+    }
+
+    storeCartUpdate(products) {
+        this.storage.setItem('lastUpdate', this._encode(products));
+    }
+
+    popCartUpdate() {
+        let raw = this.storage.getItem('lastUpdate');
+        if (raw) {
+            this.storage.setItem('lastUpdate', null);
+            return this._decode(raw);
+        }
+        return null;
     }
 
     _getAllStoredCarts() {
@@ -43,16 +56,16 @@ export default class CartStorage {
         if (typeof carts === 'undefined' || carts === null) {
             return {};
         }
-        return this._decodeCarts(carts);
+        return this._decode(carts);
     }
 
-    _encodeCarts(carts) {
-        return JSON.stringify(carts);
+    _encode(item) {
+        return JSON.stringify(item);
     }
 
-    _decodeCarts(rawCarts) {
+    _decode(rawItem) {
         try {
-            return JSON.parse(rawCarts);
+            return JSON.parse(rawItem);
         } catch (e) {
             throw new Error('cannot parse saved carts');
         }

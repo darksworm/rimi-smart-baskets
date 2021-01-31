@@ -1,5 +1,5 @@
 export default class PromptService {
-    constructor (promptProvider) {
+    constructor(promptProvider) {
         this.promptProvider = promptProvider;
     }
 
@@ -18,5 +18,22 @@ export default class PromptService {
                 resolve(result.isConfirmed);
             }).catch(reject);
         })
+    }
+
+    notifyProductAdditionFailed(body, footer) {
+        return new Promise((resolve, reject) => {
+            this.promptProvider.fire({
+                icon: 'error',
+                title: 'Failed to add products!',
+                html: body,
+                footer: footer,
+                showCancelButton: false,
+                confirmButtonText: 'OK',
+                customClass: {
+                    container: 'smart-basket-missing-product-warning',
+                    confirmButton: 'smart-basket-accept',
+                }
+            }).then(resolve).catch(reject);
+        });
     }
 }

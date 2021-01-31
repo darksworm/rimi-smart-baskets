@@ -219,7 +219,7 @@ describe('CartUpdater', function () {
                     return Promise.resolve();
                 }
             };
-            let cartUpdater = new CartUpdater(api, indicator, dom.window);
+            let cartUpdater = new CartUpdater(api, {storeCartUpdate: () => {}});
             await cartUpdater.doAction(() => {}, [1, 2, 3]);
             expect(calledTimes).to.equal(3);
         });
