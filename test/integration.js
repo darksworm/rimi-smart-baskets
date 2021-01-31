@@ -32,7 +32,8 @@ function setupDOM(htmlPath) {
     global.document = dom.window.document;
     global.window = dom.window;
 
-    global.window.scrollTo = () => {};
+    global.window.scrollTo = () => {
+    };
     Object.defineProperty(global.window, 'localStorage', {
         value: global.localStorage,
         configurable: true,
@@ -48,8 +49,8 @@ function setupDOM(htmlPath) {
     global.window.eval(script)
 }
 
-function setupMockCarts() {
-    let carts = {
+function getMockCarts() {
+    return {
         '13371337': {
             id: '13371337',
             name: 'dankmemes',
@@ -103,7 +104,10 @@ function setupMockCarts() {
             ]
         }
     };
+}
 
+function setupMockCarts() {
+    let carts = getMockCarts();
     localStorage.setItem('carts', JSON.stringify(carts));
 }
 
@@ -297,7 +301,7 @@ describe('DOM with empty basket', function () {
         }
 
         function getAddedCartProducts() {
-            let carts = JSON.parse(localStorage.getItem('carts'));
+            let carts = getMockCarts();
             return Array.from(carts['13371337'].products);
         }
 
