@@ -5,12 +5,8 @@ export default class CartUpdater {
     }
 
     async doAction(onProgress, products) {
-        this.saveCartUpdateInStorage(products);
-        await this.updateProducts(onProgress, products);
-    }
-
-    saveCartUpdateInStorage(products) {
         this.cartStorage.storeCartUpdate(products);
+        await this.updateProducts(onProgress, products);
     }
 
     async updateProducts(onProgress, products) {

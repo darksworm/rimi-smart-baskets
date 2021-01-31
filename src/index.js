@@ -11,7 +11,9 @@ import AppendCartButtonCreator from "./lib/ui/appendCartButtonCreator";
 import CartAbandonmentConfirmer from "./lib/ui/cartAbandonmentConfirmer";
 import CartUpdateValidator from "./lib/cart/cartUpdateValidator";
 
+import ProductListHTMLBuilder from "./lib/ui/productListHTMLBuilder";
 import CartUpdateProgressIndicator from "./lib/ui/cartUpdateProgressIndicator";
+
 import NotificationService from "./lib/ui/notificationService";
 import PromptService from "./lib/ui/promptService";
 
@@ -19,6 +21,7 @@ import sweetalert2CSS from 'sweetalert2/dist/sweetalert2.css'
 import notyfCSS from 'notyf/notyf.min.css'
 import smartBasketCSS from './static/style.css'
 import cartSVG from './static/cart.svg'
+import productAdditionWarningFooter from './static/product-addition-warning-footer.html';
 
 (function () {
     "use strict";
@@ -50,23 +53,8 @@ import cartSVG from './static/cart.svg'
     if (cartUpdate) {
         let validator = new CartUpdateValidator(rimi.dom.getCurrentCart().products, cartUpdate);
         if (validator.hasProductUpdateFailed()) {
-            let failedProducts = validator.getFailedProducts();
-
-            let ul = document.createElement('ul');
-            for (let product of failedProducts) {
-                let li = document.createElement('li');
-                let a = document.createElement('a');
-                a.href = "https://www.rimi.lv/e-veikals/lv/produkti/p/" + product.id;
-                a.target = "_blank";
-                a.innerHTML = product.name;
-                li.appendChild(a);
-                ul.appendChild(li);
-            }
-            
-            let body = ul.outerHTML;
-            let footer = '<div style="text-align: center;">These products could not be added because they are unavailable or you\'ve reached their purchasing limit.</div>';
-
-            promptService.notifyProductAdditionFailed(body, footer);
+            let listBuilder = new ProductListHTMLBuilder(validator.getFailedProducts());
+            promptService.notifyProductAdditionFailed(listBuilder.build(), productAdditionWarningFooter);
         }
     }
 })();
