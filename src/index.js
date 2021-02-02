@@ -1,6 +1,3 @@
-import sweetalert2 from 'sweetalert2/dist/sweetalert2.js'
-import {Notyf} from 'notyf';
-
 import CSSInjector from "./lib/generic/cssInjector"
 
 import Rimi from "./lib/rimi/rimi";
@@ -17,7 +14,6 @@ import CartUpdateProgressIndicator from "./lib/ui/cartUpdateProgressIndicator";
 import NotificationService from "./lib/ui/notificationService";
 import PromptService from "./lib/ui/promptService";
 
-import sweetalert2CSS from 'sweetalert2/dist/sweetalert2.css'
 import notyfCSS from 'notyf/notyf.min.css'
 import smartBasketCSS from './static/style.css'
 import cartSVG from './static/cart.svg'
@@ -30,9 +26,9 @@ import productAdditionWarningFooter from './static/product-addition-warning-foot
     const cartStorage = new CartStorage(localStorage);
 
     const notificationService = new NotificationService(new Notyf());
-    const promptService = new PromptService(sweetalert2);
+    const promptService = new PromptService(Swal);
 
-    let externalStylesheets = [smartBasketCSS, notyfCSS, sweetalert2CSS];
+    let externalStylesheets = [smartBasketCSS, notyfCSS];
     new CSSInjector(document).injectMultiple(externalStylesheets);
 
     if (rimi.dom.isInSavedCart()) {
