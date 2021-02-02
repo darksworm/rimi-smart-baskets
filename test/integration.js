@@ -3,6 +3,8 @@ import {before, beforeEach, describe, it} from "mocha";
 
 import {JSDOM} from "jsdom";
 import axios from "axios";
+import {Notyf} from "notyf";
+import sweetalert2 from "sweetalert2";
 
 import fs from "fs";
 import {asyncTasks} from "await-async-task";
@@ -15,6 +17,8 @@ const script = fs.readFileSync('dist/userscript.js', 'utf-8');
 before(function () {
     global.axiosMock = new AxiosMockAdapter(axios);
     global.axios = axios;
+    global.Notyf = Notyf;
+    global.Swal = sweetalert2;
 });
 
 beforeEach(function () {
