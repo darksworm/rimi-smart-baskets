@@ -90,4 +90,13 @@ export default class RimiDOM {
 
         return undefined;
     }
+
+    isLoggedIn() {
+        let profileElement = this.window.document.getElementsByClassName('header__profile')[0];
+        return false === profileElement.innerHTML.includes('login');
+    }
+
+    redirectToLoginPage() {
+        this.window.location.href = '/e-veikals/account/login';
+    }
 }
