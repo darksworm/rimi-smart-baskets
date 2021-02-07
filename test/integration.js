@@ -45,6 +45,15 @@ function setupDOM(htmlPath) {
         writable: true
     });
 
+    delete global.window.location;
+
+    Object.defineProperty(global.window, 'location', {
+        value: { href: 'https://www.rimi.lv/e-veikals/lv/checkout/cart' },
+        configurable: true,
+        enumerable: true,
+        writable: true
+    });
+
     global.Element = window.Element;
     global.HTMLElement = window.HTMLElement;
     global.DOMParser = window.DOMParser;
@@ -498,5 +507,19 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
         await asyncTasks();
 
         expect(clickSpyCaughtClick).to.equal(true);
+    });
+
+    it('should not redirect to login page', function () {
+        expect(window.location.href).to.not.include('/e-veikals/account/login');
+    });
+});
+
+describe('opened empty cart when not logged in', function () {
+    beforeEach('setup DOM', function () {
+        setupDOM('test/rimi-cart-not-logged-in.html');
+    });
+
+    it('should redirect to login page', function () {
+        expect(window.location.href).to.include('/e-veikals/account/login');
     })
 });

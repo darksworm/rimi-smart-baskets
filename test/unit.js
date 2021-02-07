@@ -1,3 +1,5 @@
+import fs from "fs";
+
 import {expect} from "chai";
 import {before, beforeEach, describe, it} from "mocha";
 
@@ -42,6 +44,38 @@ describe('RimiDOM with blank page and google.com as URL', function () {
     })
 });
 
+describe('RimiDOM isLoggedIn', function () {
+    let rimiDOM;
+
+    describe('with present login button', function () {
+        before(function () {
+            const html = fs.readFileSync('test/rimi-header-login-btn.html', 'utf-8');
+            const dom = new JSDOM(html, {
+                'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
+            });
+            rimiDOM = new RimiDOM(dom.window);
+        });
+
+        it('should know that it is not logged in', function () {
+            expect(rimiDOM.isLoggedIn()).to.be.false;
+        });
+    });
+
+    describe('with no login button', function () {
+        const html = fs.readFileSync('test/rimi-header-logged-in.html', 'utf-8');
+        before(function () {
+            const dom = new JSDOM(html, {
+                'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
+            });
+            rimiDOM = new RimiDOM(dom.window);
+        });
+
+        it('should know that it is logged in', function () {
+            expect(rimiDOM.isLoggedIn()).to.be.true;
+        });
+    });
+});
+
 describe('RimiAPI', function () {
     describe('constructor', function () {
         it('throws without params', function () {
@@ -65,7 +99,7 @@ describe('RimiAPI', function () {
             expect(called).to.equal(true);
         })
     })
-})
+});
 
 describe('CartStorage', function () {
     function createStorageMock() {
