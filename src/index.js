@@ -23,6 +23,11 @@ import productAdditionWarningFooter from './static/product-addition-warning-foot
     "use strict";
 
     const rimi = new Rimi(window, axios);
+
+    if (false === rimi.dom.isLoggedIn()) {
+        return rimi.dom.redirectToLoginPage();
+    }
+
     const cartStorage = new CartStorage(localStorage);
 
     const notificationService = new NotificationService(new Notyf());
