@@ -58,8 +58,4 @@ import productAdditionWarningFooter from './static/product-addition-warning-foot
             promptService.notifyProductAdditionFailed(listBuilder.build(), productAdditionWarningFooter);
         }
     }
-
-    if (false === rimi.dom.isLoggedIn()) {
-        rimi.dom.redirectToLoginPage();
-    }
 })();
