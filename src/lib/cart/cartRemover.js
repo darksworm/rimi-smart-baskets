@@ -1,7 +1,21 @@
 export default class CartRemover {
-    constructor(rimiAPI, document) {
+    constructor(rimiAPI, document, promptService) {
         this.rimiAPI = rimiAPI;
         this.document = document;
+        this.promptService = promptService;
+    }
+
+    promptAndRemoveCart(cartName, cartId) {
+        this._findCartLiElement(cartId);
+        this.promptService.promptCartRemoval(cartName)
+            .then(this._stopMenuFromClosing)
+            .then(() => this._removeSavedCart(cartId))
+            .catch(this._stopMenuFromClosing);
+    }
+
+    _removeSavedCart(cartId) {
+        return this.rimiAPI.removeSavedCart(cartId)
+            .then(() => this._removeCartLiElement(cartId));
     }
 
     _findCartLiElement(cartId) {
@@ -14,14 +28,11 @@ export default class CartRemover {
         }
     }
 
-    removeCart(cartId) {
-        let elem = this._findCartLiElement(cartId);
+    _stopMenuFromClosing() {
+        document.querySelector('section.cart').classList.add('-saved-cart-active');
+    }
 
-        this.rimiAPI.removeSavedCart(cartId)
-            .then((success) => {
-                if (success) {
-                    elem.remove();
-                }
-            })
+    _removeCartLiElement(cartId) {
+        this._findCartLiElement(cartId).remove();
     }
 }

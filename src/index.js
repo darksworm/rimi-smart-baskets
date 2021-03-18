@@ -61,14 +61,10 @@ import CartRemover from "./lib/cart/cartRemover";
         }
     }
 
-    let removeBtnCreator = new RemoveBtnCreator(document);
-    removeBtnCreator.createButtons("", (cartName, cartId) => {
-        promptService.promptCartRemoval(cartName)
-            .then((accepted) => {
-                if (accepted) {
-                    new CartRemover(rimi.api, document).removeCart(cartId);
-                }
-                document.querySelector('section.cart').classList.add('-saved-cart-active');
-            })
-    });
+    const removeBtnCreator = new RemoveBtnCreator(document);
+    const cartRemover = new CartRemover(rimi.api, document, promptService);
+    removeBtnCreator.createButtons(
+        "",
+        cartRemover.promptAndRemoveCart.bind(cartRemover)
+    );
 })();

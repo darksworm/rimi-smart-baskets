@@ -51,7 +51,11 @@ export default class PromptService {
                     container: 'smart-basket-cart-removal-prompt'
                 }
             }).then((result) => {
-                resolve(result.isConfirmed);
+                if (result.isConfirmed) {
+                    resolve();
+                } else {
+                    reject();
+                }
             }).catch(reject);
         })
     }
