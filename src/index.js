@@ -19,6 +19,7 @@ import smartBasketCSS from './static/style.css'
 import cartSVG from './static/cart.svg'
 import productAdditionWarningFooter from './static/product-addition-warning-footer.html';
 import RemoveBtnCreator from "./lib/cart/removeBtnCreator";
+import CartRemover from "./lib/cart/cartRemover";
 
 (function () {
     "use strict";
@@ -61,5 +62,13 @@ import RemoveBtnCreator from "./lib/cart/removeBtnCreator";
     }
 
     let removeBtnCreator = new RemoveBtnCreator(document);
-    removeBtnCreator.createButtons("", promptService.promptCartRemoval.bind(promptService));
+    removeBtnCreator.createButtons("", (cartName, cartId) => {
+        promptService.promptCartRemoval(cartName)
+            .then((accepted) => {
+                if (accepted) {
+                    new CartRemover(rimi.api, document).removeCart(cartId);
+                }
+                document.querySelector('section.cart').classList.add('-saved-cart-active');
+            })
+    });
 })();

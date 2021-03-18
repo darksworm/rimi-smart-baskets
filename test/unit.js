@@ -14,6 +14,7 @@ import RemoveBtnCreator from "../src/lib/cart/removeBtnCreator";
 import LoadingIndicator from "../src/lib/ui/loadingIndicator"
 
 import {asyncTasks} from "await-async-task";
+import CartRemover from "../src/lib/cart/cartRemover";
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
@@ -100,6 +101,53 @@ describe('RimiAPI', function () {
             let api = new RimiAPI('whatever', 'nextever', axiosMock);
             api.updateProduct(123, 1, 1);
             expect(called).to.equal(true);
+        })
+    })
+
+    describe('removeSavedCart', function () {
+        let postURL;
+        let postData;
+        let api;
+        let postHeaders;
+
+        beforeEach(function () {
+            const axiosMock = {
+                post: (url, data, config) => {
+                    postURL = url;
+                    postData = data;
+                    postHeaders = config["headers"];
+                }
+            };
+
+            api = new RimiAPI('tokenRedacted', 'csrfRedacted', axiosMock);
+        })
+
+        it('calls axios.post with delete endpoint', function () {
+            api.removeSavedCart(123);
+            expect(postURL).to.equal("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete");
+        })
+
+        it('posts first passed element as code element', function () {
+            api.removeSavedCart(123);
+            expect(postData['code']).to.equal(123);
+
+            api.removeSavedCart(333);
+            expect(postData['code']).to.equal(333);
+        })
+
+        it('posts method "delete"', function () {
+            api.removeSavedCart(333);
+            expect(postData['_method']).to.equal("delete");
+        })
+
+        it("posts token", function () {
+            api.removeSavedCart(111);
+            expect(postData['_token']).to.equal('tokenRedacted');
+        })
+
+        it("posts with csrf token in headers", function () {
+            api.removeSavedCart(233);
+            expect(postHeaders["x-csrf-token"]).to.equal('csrfRedacted');
         })
     })
 });
@@ -285,24 +333,25 @@ describe('RemoveBtnCreator', function () {
         </ul>`, {
             'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
         });
+
+        this.document = this.dom.window.document;
     });
 
     describe('createButtons', function () {
-
         describe('without innerHTML', function () {
             beforeEach('setup dom', function () {
-                const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
+                const removeBtnCreator = new RemoveBtnCreator(this.document);
                 removeBtnCreator.createButtons();
             });
 
             it('no remove button added to the new cart list element', function () {
-                const newCartRemoveBtn = this.dom.window.document.querySelector("#new-cart-li .remove-saved-cart");
+                const newCartRemoveBtn = this.document.querySelector("#new-cart-li .remove-saved-cart");
                 expect(newCartRemoveBtn).to.equal(null);
             })
 
             it('every list element which is not the new cart element contains a remove saved cart button', function () {
-                const btns = this.dom.window.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart");
-                const li = this.dom.window.document.querySelectorAll("li:not(#new-cart-li)");
+                const btns = this.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart");
+                const li = this.document.querySelectorAll("li:not(#new-cart-li)");
 
                 expect(btns.length).to.be.greaterThan(0);
                 expect(btns.length).to.equal(li.length);
@@ -311,11 +360,11 @@ describe('RemoveBtnCreator', function () {
 
         it('when passed svg element, creates svg element in all buttons except new cart button', function () {
             const svg = '<svg><g xmlns="http://www.w3.org/2000/svg" id="Solid"><path d="m297.575"/></g></svg>';
-            const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
+            const removeBtnCreator = new RemoveBtnCreator(this.document);
             removeBtnCreator.createButtons(svg);
 
-            const svgs = this.dom.window.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart svg");
-            const btns = this.dom.window.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart");
+            const svgs = this.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart svg");
+            const btns = this.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart");
 
             expect(svgs.length).to.be.greaterThan(0);
             expect(btns.length).to.equal(svgs.length);
@@ -323,10 +372,10 @@ describe('RemoveBtnCreator', function () {
 
         it('when passed div element, creates copies of it inside all of the buttons except ne new cart button', function () {
             const svg = '<div class="classy"><marquee>dankmemes</marquee></div>';
-            const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
+            const removeBtnCreator = new RemoveBtnCreator(this.document);
             removeBtnCreator.createButtons(svg);
 
-            const svgs = this.dom.window.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart .classy");
+            const svgs = this.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart .classy");
 
             expect(svgs.length).to.be.greaterThan(0);
             svgs.forEach(elem => expect(elem.outerHTML).to.equal(svg))
@@ -335,7 +384,7 @@ describe('RemoveBtnCreator', function () {
         it('second passed parameter called when button clicked', function () {
             let called = false;
 
-            const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
+            const removeBtnCreator = new RemoveBtnCreator(this.document);
             const confirmCallback = () => {
                 called = true;
                 return new Promise(((resolve) => resolve(true)));
@@ -343,19 +392,25 @@ describe('RemoveBtnCreator', function () {
 
             removeBtnCreator.createButtons("", confirmCallback);
 
-            const removeBtn = this.dom.window.document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+            const removeBtn = this.document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
             removeBtn.click();
 
             expect(called).to.equal(true);
         })
 
-        describe('propmt callback', function() {
-            beforeEach(function() {
-                this.calledCartName = undefined;
+        describe('prompt callback', function () {
+            let calledCartName = undefined;
+            let calledCartId = undefined;
 
-                const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
-                const confirmCallback = (cartName) => {
-                    this.calledCartName = cartName;
+            beforeEach(function () {
+                calledCartName = undefined;
+                calledCartId = undefined;
+
+                const removeBtnCreator = new RemoveBtnCreator(this.document);
+                const confirmCallback = (cartName, cartId) => {
+                    calledCartName = cartName;
+                    calledCartId = cartId;
+
                     return new Promise(((resolve) => resolve(true)));
                 };
 
@@ -370,24 +425,107 @@ describe('RemoveBtnCreator', function () {
                 return document.querySelectorAll(".saved-cart-popup.js-saved li")[index].textContent.trim();
             }
 
-            it('receives correct cart name for zeroth cart', function () {
-                const cartRemoveElem = getRemoveElement(this.dom.window.document, 0);
-                const cartName = getCartName(this.dom.window.document, 0);
+            it('receives correct cart data for zeroth cart', function () {
+                const cartRemoveElem = getRemoveElement(this.document, 0);
 
                 cartRemoveElem.click();
-                expect(this.calledCartName).to.equal(cartName);
+                expect(calledCartName).to.equal("dankmemes");
+                expect(calledCartId).to.equal("13371337");
             })
 
-            it('receives correct cart name for first cart', function () {
-                const cartRemoveElem = getRemoveElement(this.dom.window.document, 1);
-                const cartName = getCartName(this.dom.window.document, 1);
+            it('receives correct cart data for first cart', function () {
+                const cartRemoveElem = getRemoveElement(this.document, 1);
 
                 cartRemoveElem.click();
-                expect(this.calledCartName).to.equal(cartName);
+                expect(calledCartName).to.equal("temp");
+                expect(calledCartId).to.equal("1101522953");
             })
         })
     })
-})
 
-//import {asyncTasks} from "await-async-task";
-//await asyncTasks();
+    describe('CartRemover', function () {
+        beforeEach('setup dom', function () {
+            this.dom = new JSDOM(`
+                <ul class="saved-cart-popup js-saved">
+                <li>
+                    <button name="cart" value="13371337">dankmemes</button>
+                </li>
+                <li>
+                    <button name="cart" value="1101522953">temp</button>
+                </li>
+                <li id="new-cart-li">
+                    <button name="cart" value="new" class="js-new-cart">
+                        <span>Sākt jaunu grozu</span>
+                        <svg class="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                            <path d="M6 24h36M24 42V5.9" fill="none" stroke="currentColor" stroke-width="2"
+                                  stroke-miterlimit="10"></path>
+                        </svg>
+                    </button>
+                </li>
+                </ul>`, {
+                'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
+            });
+
+            this.document = this.dom.window.document;
+        });
+
+        it('does not remove elements from DOM when removeSavedCart fails', function () {
+            const apiMock = {
+                removeSavedCart() {
+                    return Promise.resolve(false);
+                }
+            }
+
+            const remover = new CartRemover(apiMock, this.document);
+            remover.removeCart(13371337);
+
+            const elems = this.document.querySelectorAll('li');
+            expect(elems.length).to.equal(3);
+        })
+
+        it('does not remove elements from DOM when removeSavedCart rejects', function () {
+            const apiMock = {
+                removeSavedCart() {
+                    return Promise.reject();
+                }
+            }
+
+            const remover = new CartRemover(apiMock, this.document);
+            remover.removeCart(13371337);
+
+            const elems = this.document.querySelectorAll('li');
+            expect(elems.length).to.equal(3);
+        })
+
+        it('throws exception when non-existant cart removal requested', function () {
+            const mockAPI = {removeSavedCart() {return Promise.resolve()}};
+            const remover = new CartRemover(mockAPI, this.document);
+            expect(() => remover.removeCart(12345)).to.throw();
+        })
+
+        it('doesnt throw exception when existing cart removal requested', function () {
+            const mockAPI = {removeSavedCart() {return Promise.resolve()}};
+            const remover = new CartRemover(mockAPI, this.document);
+            remover.removeCart(13371337);
+        })
+
+        it('removes li element from DOM when removeSavedCart succeeds', async function () {
+            const apiMock = {
+                removeSavedCart() {
+                    return Promise.resolve(true);
+                }
+            }
+
+            const remover = new CartRemover(apiMock, this.document);
+            remover.removeCart(13371337);
+
+            await asyncTasks();
+
+            const btn = this.document.querySelector(`.saved-cart-popup.js-saved li button[value='13371337']`);
+            expect(btn).to.be.null;
+
+            const elems = this.document.querySelectorAll('li');
+            expect(elems.length).to.equal(2);
+        })
+    })
+})

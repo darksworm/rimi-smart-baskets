@@ -31,6 +31,26 @@ export default class RimiAPI {
         };
     }
 
+    removeSavedCart(cartId) {
+        return this.axios.post(
+            this._getRemoveSavedCartURL(),
+            this._getRemoveSavedCartPostData(cartId),
+            this._getAxiosConfig()
+        );
+    }
+
+    _getRemoveSavedCartURL() {
+        return "https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete";
+    }
+
+    _getRemoveSavedCartPostData(cartId) {
+        return {
+            "code": cartId,
+            "_method": "delete",
+            "_token": this.token
+        };
+    }
+
     _getAxiosConfig() {
         return {
             headers: {

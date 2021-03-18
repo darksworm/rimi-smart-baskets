@@ -540,34 +540,101 @@ describe('Make cart deletion possible in cart view', function () {
         const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
         removeBtn.click();
 
-        const confirmBtn = document.querySelector('.confirm-cart-removal');
+        const confirmBtn = document.querySelector('.smart-basket-confirm-cart-removal');
         expect(confirmBtn).to.not.equal(null);
     });
 
-    it('if confirmed, send request to delete the cart', function () {
+    it('prompt contains cart name', function () {
+        const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+        removeBtn.click();
+
+        const prompt = document.querySelector('.smart-basket-cart-removal-prompt');
+        expect(prompt).to.not.equal(null);
+        expect(prompt.innerHTML).to.contain('dankmemes');
+    });
+
+    describe('if removal declined', function () {
+        beforeEach(async function() {
+            const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+            removeBtn.click();
+
+            const declineBtn = document.querySelector('.smart-basket-decline-cart-removal');
+            declineBtn.click();
+
+            await asyncTasks();
+        })
+
+        it('doesn\'t post any data', function () {
+            expect(axiosMock.history.post.length).to.equal(0);
+        })
+
+        it('doesn\'t remove element', function () {
+            const btn = document.querySelector(`.saved-cart-popup.js-saved li button[value='13371337']`);
+            expect(btn).to.not.be.null;
+        })
+
+        it('keeps menu open', function () {
+            let flaggedElem = document.querySelector('.-saved-cart-active');
+            expect(flaggedElem).to.not.be.null;
+        })
+    })
+
+    it('if removal confirmed but api call unsuccessful, doesn\'t remove element', async function () {
         axiosMock
             .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
-            .reply(200, {})
-
-        const liElem = document.querySelectorAll(".saved-cart-popup.js-saved li button[name='cart']")[0];
-        const cartCode = liElem.value;
+            .reply(500, {})
 
         const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
         removeBtn.click();
 
-        const confirmBtn = document.querySelector('.confirm-cart-removal');
-        confirmBtn.click();
+        const declineBtn = document.querySelector('.smart-basket-confirm-cart-removal');
+        declineBtn.click();
 
-        expect(axiosMock.history.post.length).to.equal(1);
-        let postData = axiosMock.history.post[0];
-
-        expect(postData._method).to.equal("delete");
-        expect(postData._token).to.equal("redacted");
-        expect(postData.code).to.equal(cartCode);
+        await asyncTasks();
+        const btn = document.querySelector(`.saved-cart-popup.js-saved li button[value='13371337']`);
+        expect(btn).to.not.be.null;
     })
 
-        //  'if confirmed, remove the cart from the dropdown'
-// Note
-// The delete confirmation popup should contain the cart name.
-// The cart dropdown should stay open during the whole process.
+    describe('if removal confirmed and successful', function () {
+        let cartCode;
+
+        beforeEach(async function () {
+            axiosMock
+                .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
+                .reply(200, {})
+
+            const liElem = document.querySelectorAll(".saved-cart-popup.js-saved li button[name='cart']")[0];
+            liElem.id = "swagyolo123";
+            cartCode = liElem.value;
+
+            const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+            removeBtn.click();
+
+            const confirmBtn = document.querySelector('.smart-basket-confirm-cart-removal');
+            confirmBtn.click();
+
+            await asyncTasks();
+        })
+
+        it('keeps menu open', function () {
+            let flaggedElem = document.querySelector('.-saved-cart-active');
+            expect(flaggedElem).to.not.be.null;
+        })
+
+        it('sends request to delete the cart', async function () {
+            expect(axiosMock.history.post.length).to.equal(1);
+            expect(axiosMock.history.post[0].url).to.equal('https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete');
+
+            const postData = JSON.parse(axiosMock.history.post[0].data);
+
+            expect(postData._method).to.equal("delete");
+            expect(postData._token).to.equal("redacted");
+            expect(postData.code).to.equal(cartCode);
+        })
+
+        it('removes cart li element from DOM', async function () {
+            let removedElem = document.querySelector("#swagyolo123");
+            expect(removedElem).to.be.null;
+        })
+    })
 });

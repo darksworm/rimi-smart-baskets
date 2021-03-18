@@ -6,6 +6,7 @@ export default class PromptService {
     promptCartAbandonment() {
         return new Promise((resolve, reject) => {
             this.promptProvider.fire({
+                icon: 'warning',
                 text: 'Abandon current cart?',
                 showCancelButton: true,
                 confirmButtonText: `Yes`,
@@ -40,11 +41,14 @@ export default class PromptService {
     promptCartRemoval(cartName) {
         return new Promise((resolve, reject) => {
             this.promptProvider.fire({
-                text: cartName,
+                icon: 'warning',
+                text: `Delete cart ${cartName}?`,
                 showCancelButton: true,
                 confirmButtonText: `Yes`,
                 customClass: {
-                    confirmButton: 'confirm-cart-removal',
+                    confirmButton: 'smart-basket-confirm-cart-removal',
+                    cancelButton: 'smart-basket-decline-cart-removal',
+                    container: 'smart-basket-cart-removal-prompt'
                 }
             }).then((result) => {
                 resolve(result.isConfirmed);

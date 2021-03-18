@@ -6,8 +6,7 @@ export default class RemoveBtnCreator {
     createButtons(innerHTML, callback) {
         this.getLiElems()
             .forEach((elem) => {
-                const cartTitle = elem.textContent.trim();
-                elem.append(this.createRemoveBtn(innerHTML, cartTitle, callback))
+                elem.append(this.createRemoveBtn(innerHTML, elem, callback))
             });
     }
 
@@ -15,17 +14,27 @@ export default class RemoveBtnCreator {
        return this.document.querySelectorAll(".saved-cart-popup.js-saved li:not(:last-child)");
     }
 
-    createRemoveBtn(innerHTML, cartTitle, callback) {
+    createRemoveBtn(innerHTML, parentLiElement, callback) {
         let removeBtn = this.document.createElement("button");
+        const attrs = this._getRemoveBtnAttrs(parentLiElement);
+
         removeBtn.classList.add("remove-saved-cart");
         removeBtn.innerHTML = innerHTML;
+
         removeBtn.addEventListener('click', (event) => {
             event.stopPropagation();
             event.preventDefault();
-
-            callback(cartTitle);
+            callback(attrs.cartTitle, attrs.cartId);
         });
+
         return removeBtn;
+    }
+
+    _getRemoveBtnAttrs(parentLiElement) {
+        return {
+            cartTitle: parentLiElement.textContent.trim(),
+            cartId: parentLiElement.querySelector('button').value
+        }
     }
 }
 //
