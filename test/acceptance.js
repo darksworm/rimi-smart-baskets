@@ -48,7 +48,7 @@ function setupDOM(htmlPath) {
     delete global.window.location;
 
     Object.defineProperty(global.window, 'location', {
-        value: { href: 'https://www.rimi.lv/e-veikals/lv/checkout/cart' },
+        value: {href: 'https://www.rimi.lv/e-veikals/lv/checkout/cart'},
         configurable: true,
         enumerable: true,
         writable: true
@@ -522,4 +522,52 @@ describe('opened empty cart when not logged in', function () {
     it('should redirect to login page', function () {
         expect(window.location.href).to.include('/e-veikals/account/login');
     })
+});
+
+describe('Make cart deletion possible in cart view', function () {
+    beforeEach('setup DOM', function () {
+        setupDOM('test/rimi-cart-empty.html');
+    });
+
+    it('creates remove button in each cart button in the drop down menu except for the new cart button', function () {
+        const removeBtns = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart");
+        const btns = document.querySelectorAll(".saved-cart-popup.js-saved li");
+
+        expect(removeBtns.length).to.equal(btns.length - 1);
+    });
+
+    it('when a remove button is clicked, prompt user a second time to confirm the removal', function () {
+        const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+        removeBtn.click();
+
+        const confirmBtn = document.querySelector('.confirm-cart-removal');
+        expect(confirmBtn).to.not.equal(null);
+    });
+
+    it('if confirmed, send request to delete the cart', function () {
+        axiosMock
+            .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
+            .reply(200, {})
+
+        const liElem = document.querySelectorAll(".saved-cart-popup.js-saved li button[name='cart']")[0];
+        const cartCode = liElem.value;
+
+        const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+        removeBtn.click();
+
+        const confirmBtn = document.querySelector('.confirm-cart-removal');
+        confirmBtn.click();
+
+        expect(axiosMock.history.post.length).to.equal(1);
+        let postData = axiosMock.history.post[0];
+
+        expect(postData._method).to.equal("delete");
+        expect(postData._token).to.equal("redacted");
+        expect(postData.code).to.equal(cartCode);
+    })
+
+        //  'if confirmed, remove the cart from the dropdown'
+// Note
+// The delete confirmation popup should contain the cart name.
+// The cart dropdown should stay open during the whole process.
 });

@@ -9,8 +9,11 @@ import RimiDOM from "../src/lib/rimi/rimiDOM";
 import RimiAPI from "../src/lib/rimi/rimiAPI";
 import CartStorage from "../src/lib/cart/cartStorage"
 import CartUpdater from "../src/lib/cart/cartUpdater";
+import RemoveBtnCreator from "../src/lib/cart/removeBtnCreator";
 
 import LoadingIndicator from "../src/lib/ui/loadingIndicator"
+
+import {asyncTasks} from "await-async-task";
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
@@ -259,3 +262,132 @@ describe('CartUpdater', function () {
         });
     });
 });
+
+describe('RemoveBtnCreator', function () {
+    beforeEach('setup dom', function () {
+        this.dom = new JSDOM(`
+            <ul class="saved-cart-popup js-saved">
+            <li>
+                <button name="cart" value="13371337">dankmemes</button>
+            </li>
+            <li>
+                <button name="cart" value="1101522953">temp</button>
+            </li>
+            <li id="new-cart-li">
+                <button name="cart" value="new" class="js-new-cart">
+                    <span>Sākt jaunu grozu</span>
+                    <svg class="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                        <path d="M6 24h36M24 42V5.9" fill="none" stroke="currentColor" stroke-width="2"
+                              stroke-miterlimit="10"></path>
+                    </svg>
+                </button>
+            </li>
+        </ul>`, {
+            'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
+        });
+    });
+
+    describe('createButtons', function () {
+
+        describe('without innerHTML', function () {
+            beforeEach('setup dom', function () {
+                const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
+                removeBtnCreator.createButtons();
+            });
+
+            it('no remove button added to the new cart list element', function () {
+                const newCartRemoveBtn = this.dom.window.document.querySelector("#new-cart-li .remove-saved-cart");
+                expect(newCartRemoveBtn).to.equal(null);
+            })
+
+            it('every list element which is not the new cart element contains a remove saved cart button', function () {
+                const btns = this.dom.window.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart");
+                const li = this.dom.window.document.querySelectorAll("li:not(#new-cart-li)");
+
+                expect(btns.length).to.be.greaterThan(0);
+                expect(btns.length).to.equal(li.length);
+            })
+        })
+
+        it('when passed svg element, creates svg element in all buttons except new cart button', function () {
+            const svg = '<svg><g xmlns="http://www.w3.org/2000/svg" id="Solid"><path d="m297.575"/></g></svg>';
+            const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
+            removeBtnCreator.createButtons(svg);
+
+            const svgs = this.dom.window.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart svg");
+            const btns = this.dom.window.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart");
+
+            expect(svgs.length).to.be.greaterThan(0);
+            expect(btns.length).to.equal(svgs.length);
+        })
+
+        it('when passed div element, creates copies of it inside all of the buttons except ne new cart button', function () {
+            const svg = '<div class="classy"><marquee>dankmemes</marquee></div>';
+            const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
+            removeBtnCreator.createButtons(svg);
+
+            const svgs = this.dom.window.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart .classy");
+
+            expect(svgs.length).to.be.greaterThan(0);
+            svgs.forEach(elem => expect(elem.outerHTML).to.equal(svg))
+        })
+
+        it('second passed parameter called when button clicked', function () {
+            let called = false;
+
+            const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
+            const confirmCallback = () => {
+                called = true;
+                return new Promise(((resolve) => resolve(true)));
+            };
+
+            removeBtnCreator.createButtons("", confirmCallback);
+
+            const removeBtn = this.dom.window.document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+            removeBtn.click();
+
+            expect(called).to.equal(true);
+        })
+
+        describe('propmt callback', function() {
+            beforeEach(function() {
+                this.calledCartName = undefined;
+
+                const removeBtnCreator = new RemoveBtnCreator(this.dom.window.document);
+                const confirmCallback = (cartName) => {
+                    this.calledCartName = cartName;
+                    return new Promise(((resolve) => resolve(true)));
+                };
+
+                removeBtnCreator.createButtons("", confirmCallback);
+            })
+
+            function getRemoveElement(document, index) {
+                return document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[index];
+            }
+
+            function getCartName(document, index) {
+                return document.querySelectorAll(".saved-cart-popup.js-saved li")[index].textContent.trim();
+            }
+
+            it('receives correct cart name for zeroth cart', function () {
+                const cartRemoveElem = getRemoveElement(this.dom.window.document, 0);
+                const cartName = getCartName(this.dom.window.document, 0);
+
+                cartRemoveElem.click();
+                expect(this.calledCartName).to.equal(cartName);
+            })
+
+            it('receives correct cart name for first cart', function () {
+                const cartRemoveElem = getRemoveElement(this.dom.window.document, 1);
+                const cartName = getCartName(this.dom.window.document, 1);
+
+                cartRemoveElem.click();
+                expect(this.calledCartName).to.equal(cartName);
+            })
+        })
+    })
+})
+
+//import {asyncTasks} from "await-async-task";
+//await asyncTasks();

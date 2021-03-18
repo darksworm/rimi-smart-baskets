@@ -18,6 +18,7 @@ import notyfCSS from 'notyf/notyf.min.css'
 import smartBasketCSS from './static/style.css'
 import cartSVG from './static/cart.svg'
 import productAdditionWarningFooter from './static/product-addition-warning-footer.html';
+import RemoveBtnCreator from "./lib/cart/removeBtnCreator";
 
 (function () {
     "use strict";
@@ -58,4 +59,7 @@ import productAdditionWarningFooter from './static/product-addition-warning-foot
             promptService.notifyProductAdditionFailed(listBuilder.build(), productAdditionWarningFooter);
         }
     }
+
+    let removeBtnCreator = new RemoveBtnCreator(document);
+    removeBtnCreator.createButtons("", promptService.promptCartRemoval.bind(promptService));
 })();

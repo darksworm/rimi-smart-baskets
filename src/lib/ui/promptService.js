@@ -36,4 +36,19 @@ export default class PromptService {
             }).then(resolve).catch(reject);
         });
     }
+
+    promptCartRemoval(cartName) {
+        return new Promise((resolve, reject) => {
+            this.promptProvider.fire({
+                text: cartName,
+                showCancelButton: true,
+                confirmButtonText: `Yes`,
+                customClass: {
+                    confirmButton: 'confirm-cart-removal',
+                }
+            }).then((result) => {
+                resolve(result.isConfirmed);
+            }).catch(reject);
+        })
+    }
 }
