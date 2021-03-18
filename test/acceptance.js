@@ -577,22 +577,40 @@ describe('Make cart deletion possible in cart view', function () {
             let flaggedElem = document.querySelector('.-saved-cart-active');
             expect(flaggedElem).to.not.be.null;
         })
+
+        it('doesn\'t display any notification', function () {
+            const notif = document.querySelector(".rimi-smart-basket-notification");
+            expect(notif).to.not.exist;
+        })
     })
 
-    it('if removal confirmed but api call unsuccessful, doesn\'t remove element', async function () {
-        axiosMock
-            .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
-            .reply(500, {})
+    describe('if removal confirmed but api call unsuccessful', function () {
+        beforeEach(async function() {
+            axiosMock
+                .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
+                .reply(500, {})
 
-        const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
-        removeBtn.click();
+            const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+            removeBtn.click();
 
-        const declineBtn = document.querySelector('.smart-basket-confirm-cart-removal');
-        declineBtn.click();
+            const confirmBtn = document.querySelector('.smart-basket-confirm-cart-removal');
+            confirmBtn.click();
 
-        await asyncTasks();
-        const btn = document.querySelector(`.saved-cart-popup.js-saved li button[value='13371337']`);
-        expect(btn).to.not.be.null;
+            await asyncTasks();
+        })
+
+        it('doesn\'t remove element', function () {
+            const btn = document.querySelector(`.saved-cart-popup.js-saved li button[value='13371337']`);
+            expect(btn).to.not.be.null;
+        })
+
+        function getErrorMessageElement() {
+            return document.querySelector(".rimi-smart-basket-notification.error");
+        }
+
+        it('displays error message', function () {
+            expect(getErrorMessageElement()).to.exist;
+        })
     })
 
     describe('if removal confirmed and successful', function () {
@@ -635,6 +653,18 @@ describe('Make cart deletion possible in cart view', function () {
         it('removes cart li element from DOM', async function () {
             let removedElem = document.querySelector("#swagyolo123");
             expect(removedElem).to.be.null;
+        })
+
+        function getSuccessMessageElement() {
+            return document.querySelector(".rimi-smart-basket-notification.success");
+        }
+
+        it('displays success message', function () {
+            expect(getSuccessMessageElement()).to.exist;
+        })
+
+        it('displayed success message contains cart name', function () {
+            expect(getSuccessMessageElement().textContent).to.contain("dankmemes");
         })
     })
 });

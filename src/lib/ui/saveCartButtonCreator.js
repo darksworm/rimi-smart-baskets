@@ -55,7 +55,7 @@ export default class SaveCartButtonCreator {
         }
 
         let message = `Cart "${cartName}" ${cartIsNew ? 'is now stored' : 'has been updated'} in "Smart Baskets"`;
-        this.notificationHandler.success(message, 2000);
+        this.notificationHandler.notifySuccess(message, 2000);
     }
 
     setNotificationHandler(notificationHandler) {

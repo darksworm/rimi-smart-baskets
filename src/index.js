@@ -11,7 +11,6 @@ import CartUpdateValidator from "./lib/cart/cartUpdateValidator";
 import ProductListHTMLBuilder from "./lib/ui/productListHTMLBuilder";
 import CartUpdateProgressIndicator from "./lib/ui/cartUpdateProgressIndicator";
 
-import NotificationService from "./lib/ui/notificationService";
 import PromptService from "./lib/ui/promptService";
 
 import notyfCSS from 'notyf/notyf.min.css'
@@ -31,16 +30,14 @@ import CartRemover from "./lib/cart/cartRemover";
     }
 
     const cartStorage = new CartStorage(localStorage);
-
-    const notificationService = new NotificationService(new Notyf());
-    const promptService = new PromptService(Swal);
+    const promptService = new PromptService(Swal, new Notyf());
 
     let externalStylesheets = [smartBasketCSS, notyfCSS];
     new CSSInjector(document).injectMultiple(externalStylesheets);
 
     if (rimi.dom.isInSavedCart()) {
         const creator = new SaveCartButtonCreator(document, cartStorage, rimi.dom);
-        creator.setNotificationHandler(notificationService);
+        creator.setNotificationHandler(promptService);
         creator.createButton();
     } else {
         const creator = new AppendCartButtonCreator(document, cartStorage, rimi);

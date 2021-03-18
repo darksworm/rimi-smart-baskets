@@ -1,6 +1,31 @@
 export default class PromptService {
-    constructor(promptProvider) {
+    constructor(promptProvider, notificationProvider) {
         this.promptProvider = promptProvider;
+        this.notificationProvider = notificationProvider;
+    }
+
+    notifySuccess(message, duration) {
+        this.notificationProvider.success({
+            message: message,
+            duration: duration,
+            className: "rimi-smart-basket-notification success",
+            position: {
+                x: 'right',
+                y: 'top'
+            }
+        })
+    }
+
+    notifyError(message, duration) {
+        this.notificationProvider.error({
+            message: message,
+            duration: duration,
+            className: "rimi-smart-basket-notification error",
+            position: {
+                x: 'right',
+                y: 'top'
+            }
+        })
     }
 
     promptCartAbandonment() {

@@ -5,17 +5,28 @@ export default class CartRemover {
         this.promptService = promptService;
     }
 
-    promptAndRemoveCart(cartName, cartId) {
-        this._findCartLiElement(cartId);
-        this.promptService.promptCartRemoval(cartName)
+    promptAndRemoveCart(name, id) {
+        this._findCartLiElement(id);
+
+        this.promptService.promptCartRemoval(name)
             .then(this._stopMenuFromClosing)
-            .then(() => this._removeSavedCart(cartId))
+            .then(() => this._removeSavedCart(name, id))
             .catch(this._stopMenuFromClosing);
     }
 
-    _removeSavedCart(cartId) {
-        return this.rimiAPI.removeSavedCart(cartId)
-            .then(() => this._removeCartLiElement(cartId));
+    _removeSavedCart(name, id) {
+        return this.rimiAPI.removeSavedCart(id)
+            .then(() => this._removeCartLiElement(id))
+            .then(() => this._notifySuccess(name))
+            .catch(this._notifyError);
+    }
+
+    _notifySuccess(cartName) {
+        this.promptService.notifySuccess(`Cart ${cartName} removed!`, 2000);
+    }
+
+    _notifyError() {
+        this.promptService.notifyError(`Cart removal failed!`, 2000);
     }
 
     _findCartLiElement(cartId) {
