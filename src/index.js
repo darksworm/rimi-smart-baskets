@@ -11,14 +11,16 @@ import CartUpdateValidator from "./lib/cart/cartUpdateValidator";
 import ProductListHTMLBuilder from "./lib/ui/productListHTMLBuilder";
 import CartUpdateProgressIndicator from "./lib/ui/cartUpdateProgressIndicator";
 
-import PromptService from "./lib/ui/promptService";
-
-import notyfCSS from 'notyf/notyf.min.css'
-import smartBasketCSS from './static/style.css'
-import cartSVG from './static/cart.svg'
-import productAdditionWarningFooter from './static/product-addition-warning-footer.html';
 import RemoveBtnCreator from "./lib/cart/removeBtnCreator";
 import CartRemover from "./lib/cart/cartRemover";
+
+import PromptService from "./lib/ui/promptService";
+
+import notyfCSS from 'notyf/notyf.min.css';
+import smartBasketCSS from './static/style.css';
+import cartSVG from './static/cart.svg';
+import trashSVG from './static/trash.svg';
+import productAdditionWarningFooter from './static/product-addition-warning-footer.html';
 
 (function () {
     "use strict";
@@ -61,7 +63,7 @@ import CartRemover from "./lib/cart/cartRemover";
     const removeBtnCreator = new RemoveBtnCreator(document);
     const cartRemover = new CartRemover(rimi.api, document, promptService);
     removeBtnCreator.createButtons(
-        "",
+        trashSVG,
         cartRemover.promptAndRemoveCart.bind(cartRemover)
     );
 })();

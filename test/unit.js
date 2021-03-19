@@ -345,12 +345,12 @@ describe('RemoveBtnCreator', function () {
             });
 
             it('no remove button added to the new cart list element', function () {
-                const newCartRemoveBtn = this.document.querySelector("#new-cart-li .remove-saved-cart");
+                const newCartRemoveBtn = this.document.querySelector("#new-cart-li .smart-basket-remove");
                 expect(newCartRemoveBtn).to.equal(null);
             })
 
             it('every list element which is not the new cart element contains a remove saved cart button', function () {
-                const btns = this.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart");
+                const btns = this.document.querySelectorAll("li:not(#new-cart-li) .smart-basket-remove");
                 const li = this.document.querySelectorAll("li:not(#new-cart-li)");
 
                 expect(btns.length).to.be.greaterThan(0);
@@ -363,8 +363,8 @@ describe('RemoveBtnCreator', function () {
             const removeBtnCreator = new RemoveBtnCreator(this.document);
             removeBtnCreator.createButtons(svg);
 
-            const svgs = this.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart svg");
-            const btns = this.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart");
+            const svgs = this.document.querySelectorAll("li:not(#new-cart-li) .smart-basket-remove svg");
+            const btns = this.document.querySelectorAll("li:not(#new-cart-li) .smart-basket-remove");
 
             expect(svgs.length).to.be.greaterThan(0);
             expect(btns.length).to.equal(svgs.length);
@@ -375,7 +375,7 @@ describe('RemoveBtnCreator', function () {
             const removeBtnCreator = new RemoveBtnCreator(this.document);
             removeBtnCreator.createButtons(svg);
 
-            const svgs = this.document.querySelectorAll("li:not(#new-cart-li) .remove-saved-cart .classy");
+            const svgs = this.document.querySelectorAll("li:not(#new-cart-li) .smart-basket-remove .classy");
 
             expect(svgs.length).to.be.greaterThan(0);
             svgs.forEach(elem => expect(elem.outerHTML).to.equal(svg))
@@ -392,7 +392,7 @@ describe('RemoveBtnCreator', function () {
 
             removeBtnCreator.createButtons("", confirmCallback);
 
-            const removeBtn = this.document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+            const removeBtn = this.document.querySelectorAll(".saved-cart-popup.js-saved li .smart-basket-remove")[0];
             removeBtn.click();
 
             expect(called).to.equal(true);
@@ -418,7 +418,7 @@ describe('RemoveBtnCreator', function () {
             })
 
             function getRemoveElement(document, index) {
-                return document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[index];
+                return document.querySelectorAll(".saved-cart-popup.js-saved li .smart-basket-remove")[index];
             }
 
             it('receives correct cart data for zeroth cart', function () {

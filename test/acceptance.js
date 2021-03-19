@@ -160,11 +160,10 @@ describe('DOM with opened saved basket which is not stored', function () {
         expect(saveButton).to.exist;
     });
 
-    it('cart buttons in selector should not contain children', function () {
+    it('cart buttons in selector should not contain text other than cart name', function () {
         let cartButtons = document.querySelectorAll(".saved-cart-popup > li > button:not(.js-new-cart)");
-        for (let button of cartButtons) {
-            expect(button.children.length).to.equal(0);
-        }
+        expect(cartButtons[0].textContent.trim()).to.equal('SLD-CHKN-PESTO');
+        expect(cartButtons[1].textContent.trim()).to.equal('temp');
     });
 
     it('should create record in localstorage when save button clicked', function () {
@@ -242,7 +241,7 @@ describe('DOM with empty basket', function () {
     }
 
     function getCartAppendBtn() {
-        return getCartBtn().children[0];
+        return getCartBtn().querySelector('.smart-basket-add');
     }
 
     function mockCartChangeEndpoint() {
@@ -393,7 +392,7 @@ describe('DOM with new basket with same items as mock', function () {
     }
 
     function getCartAppendBtn() {
-        return getCartBtn().children[0];
+        return getCartBtn().querySelector('.smart-basket-add');
     }
 
     beforeEach(function () {
@@ -530,14 +529,14 @@ describe('Make cart deletion possible in cart view', function () {
     });
 
     it('creates remove button in each cart button in the drop down menu except for the new cart button', function () {
-        const removeBtns = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart");
+        const removeBtns = document.querySelectorAll(".saved-cart-popup.js-saved li .smart-basket-remove");
         const btns = document.querySelectorAll(".saved-cart-popup.js-saved li");
 
         expect(removeBtns.length).to.equal(btns.length - 1);
     });
 
     it('when a remove button is clicked, prompt user a second time to confirm the removal', function () {
-        const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+        const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
         removeBtn.click();
 
         const confirmBtn = document.querySelector('.smart-basket-confirm-cart-removal');
@@ -545,7 +544,7 @@ describe('Make cart deletion possible in cart view', function () {
     });
 
     it('prompt contains cart name', function () {
-        const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+        const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
         removeBtn.click();
 
         const prompt = document.querySelector('.smart-basket-cart-removal-prompt');
@@ -555,7 +554,7 @@ describe('Make cart deletion possible in cart view', function () {
 
     describe('if removal declined', function () {
         beforeEach(async function() {
-            const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+            const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
             removeBtn.click();
 
             const declineBtn = document.querySelector('.smart-basket-decline-cart-removal');
@@ -590,7 +589,7 @@ describe('Make cart deletion possible in cart view', function () {
                 .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
                 .reply(500, {})
 
-            const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+            const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
             removeBtn.click();
 
             const confirmBtn = document.querySelector('.smart-basket-confirm-cart-removal');
@@ -621,11 +620,11 @@ describe('Make cart deletion possible in cart view', function () {
                 .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
                 .reply(200, {})
 
-            const liElem = document.querySelectorAll(".saved-cart-popup.js-saved li button[name='cart']")[0];
+            const liElem = document.querySelector(".saved-cart-popup.js-saved li button[name='cart']");
             liElem.id = "swagyolo123";
             cartCode = liElem.value;
 
-            const removeBtn = document.querySelectorAll(".saved-cart-popup.js-saved li .remove-saved-cart")[0];
+            const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
             removeBtn.click();
 
             const confirmBtn = document.querySelector('.smart-basket-confirm-cart-removal');

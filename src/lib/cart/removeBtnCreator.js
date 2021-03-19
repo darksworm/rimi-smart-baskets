@@ -4,21 +4,21 @@ export default class RemoveBtnCreator {
     }
 
     createButtons(innerHTML, callback) {
-        this.getLiElems()
+        this.getCartButtonElements()
             .forEach((elem) => {
                 elem.prepend(this.createRemoveBtn(innerHTML, elem, callback))
             });
     }
 
-    getLiElems() {
-       return this.document.querySelectorAll(".saved-cart-popup.js-saved li:not(:last-child)");
+    getCartButtonElements() {
+       return this.document.querySelectorAll(".saved-cart-popup.js-saved li:not(:last-child) button[name='cart']");
     }
 
-    createRemoveBtn(innerHTML, parentLiElement, callback) {
-        let removeBtn = this.document.createElement("button");
-        const attrs = this._getRemoveBtnAttrs(parentLiElement);
+    createRemoveBtn(innerHTML, cartButtonElement, callback) {
+        let removeBtn = this.document.createElement("span");
+        const attrs = this._getRemoveBtnAttrs(cartButtonElement);
 
-        removeBtn.classList.add("remove-saved-cart");
+        removeBtn.classList.add("smart-basket-remove");
         removeBtn.innerHTML = innerHTML;
 
         removeBtn.addEventListener('click', (event) => {
@@ -30,10 +30,10 @@ export default class RemoveBtnCreator {
         return removeBtn;
     }
 
-    _getRemoveBtnAttrs(parentLiElement) {
+    _getRemoveBtnAttrs(cartButtonElement) {
         return {
-            cartTitle: parentLiElement.textContent.trim(),
-            cartId: parentLiElement.querySelector('button').value
+            cartTitle: cartButtonElement.textContent.trim(),
+            cartId: cartButtonElement.value
         }
     }
 }
