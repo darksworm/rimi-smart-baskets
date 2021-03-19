@@ -415,7 +415,7 @@ describe('DOM with new basket with same items as mock', function () {
     });
 
     it('should ask for confirmation when trying to open another cart', function () {
-        let otherCartBtn = document.querySelector(".saved-cart-popup > li > button");
+        let otherCartBtn = document.querySelector(".saved-cart-popup > li > button[name='cart']");
         otherCartBtn.click();
         let confirmBox = document.querySelector(".smart-basket-confirm-action");
         expect(confirmBox).to.not.be.a('null');
@@ -447,11 +447,11 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
     }
 
     function getSavedCartButton() {
-        return document.querySelector(".saved-cart-popup > li > button");
+        return document.querySelector(".saved-cart-popup > li > button[name='cart']");
     }
 
     function getOtherSavedCartButton() {
-        return document.querySelector(".saved-cart-popup > li:nth-child(2) > button");
+        return document.querySelector(".saved-cart-popup > li:nth-child(2) > button[name='cart']");
     }
 
     function getAcceptButton() {

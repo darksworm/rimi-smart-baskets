@@ -6,7 +6,7 @@ export default class RemoveBtnCreator {
     createButtons(innerHTML, callback) {
         this.getLiElems()
             .forEach((elem) => {
-                elem.append(this.createRemoveBtn(innerHTML, elem, callback))
+                elem.prepend(this.createRemoveBtn(innerHTML, elem, callback))
             });
     }
 

@@ -9,16 +9,16 @@ export default class CartRemover {
         this._findCartLiElement(id);
 
         this.promptService.promptCartRemoval(name)
-            .then(this._stopMenuFromClosing)
+            .then(() => this._stopMenuFromClosing())
             .then(() => this._removeSavedCart(name, id))
-            .catch(this._stopMenuFromClosing);
+            .catch(() => this._stopMenuFromClosing());
     }
 
     _removeSavedCart(name, id) {
         return this.rimiAPI.removeSavedCart(id)
             .then(() => this._removeCartLiElement(id))
             .then(() => this._notifySuccess(name))
-            .catch(this._notifyError);
+            .catch(() => this._notifyError());
     }
 
     _notifySuccess(cartName) {
