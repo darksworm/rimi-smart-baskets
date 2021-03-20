@@ -185,6 +185,10 @@ describe('CartStorage', function () {
             };
             expect(() => new CartStorage(storage)).to.throw();
         });
+
+        it('doesn\'t throw when called with storage with proper API', function () {
+            expect(() => new CartStorage(createStorageMock())).to.not.throw;
+        })
     });
 
     describe('getStoredCart', function () {

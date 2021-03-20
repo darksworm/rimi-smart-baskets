@@ -31,12 +31,7 @@ export default class CartRemover {
 
     _findCartLiElement(cartId) {
         const btn = this.document.querySelector(`.saved-cart-popup.js-saved li button[value='${cartId}']`);
-
-        if (btn) {
-            return btn.parentElement;
-        } else {
-            throw new Error(`Cart with id ${cartId} does not exist!`);
-        }
+        return btn.parentElement;
     }
 
     _stopMenuFromClosing() {

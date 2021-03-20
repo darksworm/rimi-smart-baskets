@@ -128,6 +128,12 @@ function getMissingProductWarningElement() {
     return document.querySelector('.smart-basket-missing-product-warning');
 }
 
+it('injects custom CSS elements', function () {
+    setupDOM('test/rimi-cart-saved-cart-opened.html');
+    let styleElements = document.querySelectorAll('.smart-baskets-style');
+    expect(styleElements.length).to.be.greaterThan(0);
+})
+
 describe('DOM with opened saved basket which is not stored', function () {
     function getCarts() {
         return JSON.parse(global.localStorage.carts);
@@ -298,6 +304,24 @@ describe('DOM with empty basket', function () {
         expect(getMissingProductWarningElement()).to.be.a('null');
     });
 
+    function fakeRefresh() {
+        setupDOM('test/rimi-cart-empty.html');
+    }
+
+    describe('on reloading page', async function () {
+        beforeEach(async function () {
+            setupMockCarts();
+            setupDOM('test/rimi-cart-empty.html');
+            await asyncTasks();
+            fakeRefresh();
+            await asyncTasks();
+        });
+
+        it('should not create a warning popup', async function () {
+            expect(getMissingProductWarningElement()).to.be.null;
+        });
+    });
+
     describe('when added saved cart products do not appear in opened cart', async function () {
         beforeEach(async function () {
             setupMockCarts();
@@ -307,10 +331,6 @@ describe('DOM with empty basket', function () {
             await asyncTasks();
             fakeRefresh();
         });
-
-        function fakeRefresh() {
-            setupDOM('test/rimi-cart-empty.html');
-        }
 
         function getAddedCartProducts() {
             let carts = getMockCarts();
@@ -663,6 +683,10 @@ describe('Make cart deletion possible in cart view', function () {
 
         it('displays error message', function () {
             expect(getErrorMessageElement()).to.exist;
+        })
+
+        it('error message contains word fail', function () {
+            expect(getErrorMessageElement().textContent).to.contain('fail');
         })
     })
 

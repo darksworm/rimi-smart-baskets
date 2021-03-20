@@ -27,6 +27,7 @@
     "@babel/plugin-transform-runtime": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "@babel/register": "^7.12.10",
+    "@stryker-mutator/core": "^4.5.1",
     "await-async-task": "^2.0.2",
     "axios": "^0.21.1",
     "axios-mock-adapter": "^1.19.0",
