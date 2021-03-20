@@ -1,11 +1,11 @@
 import SaveCartButtonCreator from "../ui/saveCartButtonCreator";
 import AppendCartButtonCreator from "../ui/appendCartButtonCreator";
 import CartUpdateProgressIndicator from "../ui/cartUpdateProgressIndicator";
-import RemoveBtnCreator from "../cart/removeBtnCreator";
+import RemoveCartButtonCreator from "../cart/removeCartButtonCreator";
 import CartRemover from "../cart/cartRemover";
 
 import cartSVG from '../../static/cart.svg';
-import trashSVG from '../../static/trash.svg';
+import removeSVG from '../../static/remove.svg';
 
 export function createCartManipulationButtons(document, rimi, cartStorage, promptService) {
     if (rimi.dom.isInSavedCart()) {
@@ -33,11 +33,11 @@ function createAppendCartButtons(document, cartStorage, rimi) {
 }
 
 function createSavedCartRemoveButtons (document, rimiAPI, promptService) {
-    const removeBtnCreator = new RemoveBtnCreator(document);
+    const removeBtnCreator = new RemoveCartButtonCreator(document);
     const cartRemover = new CartRemover(document, rimiAPI, promptService);
 
     removeBtnCreator.createButtons(
-        trashSVG,
+        removeSVG,
         cartRemover.promptAndRemoveCart.bind(cartRemover)
     );
 }

@@ -1,12 +1,13 @@
-export default class RemoveBtnCreator {
+export default class RemoveCartButtonCreator {
     constructor(document) {
         this.document = document;
     }
 
-    createButtons(innerHTML, callback) {
+    createButtons(innerHTML, onClick) {
         this.getCartButtonElements()
             .forEach((elem) => {
-                elem.prepend(this.createRemoveBtn(innerHTML, elem, callback))
+                let button = this.createRemoveBtn(innerHTML, elem, onClick);
+                elem.prepend(button);
             });
     }
 
@@ -14,7 +15,7 @@ export default class RemoveBtnCreator {
        return this.document.querySelectorAll(".saved-cart-popup.js-saved li:not(:last-child) button[name='cart']");
     }
 
-    createRemoveBtn(innerHTML, cartButtonElement, callback) {
+    createRemoveBtn(innerHTML, cartButtonElement, onClick) {
         let removeBtn = this.document.createElement("span");
         const attrs = this._getRemoveBtnAttrs(cartButtonElement);
 
@@ -24,7 +25,7 @@ export default class RemoveBtnCreator {
         removeBtn.addEventListener('click', (event) => {
             event.stopPropagation();
             event.preventDefault();
-            callback(attrs.cartTitle, attrs.cartId);
+            onClick(attrs.cartTitle, attrs.cartId);
         });
 
         return removeBtn;

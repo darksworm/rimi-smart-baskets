@@ -16,7 +16,7 @@ export default class CartRemover {
 
     _removeSavedCart(name, id) {
         return this.rimiAPI.removeSavedCart(id)
-            .then(() => this._removeCartLiElement(id))
+            .then(() => this._removeCartListing(id))
             .then(() => this._notifySuccess(name))
             .catch(() => this._notifyError());
     }
@@ -40,10 +40,11 @@ export default class CartRemover {
     }
 
     _stopMenuFromClosing() {
-        document.querySelector('section.cart').classList.add('-saved-cart-active');
+        let elem = this.document.querySelector('section.cart');
+        elem.classList.add('-saved-cart-active');
     }
 
-    _removeCartLiElement(cartId) {
+    _removeCartListing(cartId) {
         this._findCartLiElement(cartId).remove();
     }
 }

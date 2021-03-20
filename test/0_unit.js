@@ -4,17 +4,15 @@ import {expect} from "chai";
 import {before, beforeEach, describe, it} from "mocha";
 
 import {JSDOM} from "jsdom";
+import {asyncTasks} from "await-async-task";
 
 import RimiDOM from "../src/lib/rimi/rimiDOM";
 import RimiAPI from "../src/lib/rimi/rimiAPI";
 import CartStorage from "../src/lib/cart/cartStorage"
 import CartUpdater from "../src/lib/cart/cartUpdater";
-import RemoveBtnCreator from "../src/lib/cart/removeBtnCreator";
-
-import LoadingIndicator from "../src/lib/ui/loadingIndicator"
-
-import {asyncTasks} from "await-async-task";
 import CartRemover from "../src/lib/cart/cartRemover";
+import RemoveCartButtonCreator from "../src/lib/cart/removeCartButtonCreator";
+import LoadingIndicator from "../src/lib/ui/loadingIndicator"
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
@@ -324,10 +322,7 @@ describe('RemoveBtnCreator', function () {
             <li id="new-cart-li">
                 <button name="cart" value="new" class="js-new-cart">
                     <span>Sākt jaunu grozu</span>
-                    <svg class="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-                        <path d="M6 24h36M24 42V5.9" fill="none" stroke="currentColor" stroke-width="2"
-                              stroke-miterlimit="10"></path>
-                    </svg>
+                    <svg class=""></svg>
                 </button>
             </li>
         </ul>`, {
@@ -340,7 +335,7 @@ describe('RemoveBtnCreator', function () {
     describe('createButtons', function () {
         describe('without innerHTML', function () {
             beforeEach('setup dom', function () {
-                const removeBtnCreator = new RemoveBtnCreator(this.document);
+                const removeBtnCreator = new RemoveCartButtonCreator(this.document);
                 removeBtnCreator.createButtons();
             });
 
@@ -360,7 +355,7 @@ describe('RemoveBtnCreator', function () {
 
         it('when passed svg element, creates svg element in all buttons except new cart button', function () {
             const svg = '<svg><g xmlns="http://www.w3.org/2000/svg" id="Solid"><path d="m297.575"/></g></svg>';
-            const removeBtnCreator = new RemoveBtnCreator(this.document);
+            const removeBtnCreator = new RemoveCartButtonCreator(this.document);
             removeBtnCreator.createButtons(svg);
 
             const svgs = this.document.querySelectorAll("li:not(#new-cart-li) .smart-basket-remove svg");
@@ -371,20 +366,20 @@ describe('RemoveBtnCreator', function () {
         })
 
         it('when passed div element, creates copies of it inside all of the buttons except ne new cart button', function () {
-            const svg = '<div class="classy"><marquee>dankmemes</marquee></div>';
-            const removeBtnCreator = new RemoveBtnCreator(this.document);
-            removeBtnCreator.createButtons(svg);
+            const div = '<div class="classy"><marquee>dankmemes</marquee></div>';
+            const removeBtnCreator = new RemoveCartButtonCreator(this.document);
+            removeBtnCreator.createButtons(div);
 
-            const svgs = this.document.querySelectorAll("li:not(#new-cart-li) .smart-basket-remove .classy");
+            const divs = this.document.querySelectorAll("li:not(#new-cart-li) .smart-basket-remove .classy");
 
-            expect(svgs.length).to.be.greaterThan(0);
-            svgs.forEach(elem => expect(elem.outerHTML).to.equal(svg))
+            expect(divs.length).to.be.greaterThan(0);
+            divs.forEach(elem => expect(elem.outerHTML).to.equal(div))
         })
 
         it('second passed parameter called when button clicked', function () {
             let called = false;
 
-            const removeBtnCreator = new RemoveBtnCreator(this.document);
+            const removeBtnCreator = new RemoveCartButtonCreator(this.document);
             const confirmCallback = () => {
                 called = true;
                 return new Promise(((resolve) => resolve(true)));
@@ -406,7 +401,7 @@ describe('RemoveBtnCreator', function () {
                 calledCartName = undefined;
                 calledCartId = undefined;
 
-                const removeBtnCreator = new RemoveBtnCreator(this.document);
+                const removeBtnCreator = new RemoveCartButtonCreator(this.document);
                 const confirmCallback = (cartName, cartId) => {
                     calledCartName = cartName;
                     calledCartId = cartId;
@@ -442,23 +437,22 @@ describe('RemoveBtnCreator', function () {
     describe('CartRemover', function () {
         beforeEach('setup dom', function () {
             this.dom = new JSDOM(`
-                <ul class="saved-cart-popup js-saved">
-                <li>
-                    <button name="cart" value="13371337">dankmemes</button>
-                </li>
-                <li>
-                    <button name="cart" value="1101522953">temp</button>
-                </li>
-                <li id="new-cart-li">
-                    <button name="cart" value="new" class="js-new-cart">
-                        <span>Sākt jaunu grozu</span>
-                        <svg class="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-                            <path d="M6 24h36M24 42V5.9" fill="none" stroke="currentColor" stroke-width="2"
-                                  stroke-miterlimit="10"></path>
-                        </svg>
-                    </button>
-                </li>
-                </ul>`, {
+                <section class="cart">
+                    <ul class="saved-cart-popup js-saved">
+                    <li>
+                        <button name="cart" value="13371337">dankmemes</button>
+                    </li>
+                    <li>
+                        <button name="cart" value="1101522953">temp</button>
+                    </li>
+                    <li id="new-cart-li">
+                        <button name="cart" value="new" class="js-new-cart">
+                            <span>Sākt jaunu grozu</span>
+                            <svg class=""></svg>
+                        </button>
+                    </li>
+                    </ul>
+                </section>`, {
                 'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
             });
 
@@ -473,23 +467,9 @@ describe('RemoveBtnCreator', function () {
 
         const rimiAPIMock = {
             removeSavedCart() {
-                return Promise.resolve(true)
+                return Promise.resolve()
             }
         }
-
-        it('does not remove elements from DOM when removeSavedCart fails', function () {
-            const apiMock = {
-                removeSavedCart() {
-                    return Promise.resolve(false);
-                }
-            }
-
-            const remover = new CartRemover(this.document, apiMock, promptServiceMock);
-            remover.promptAndRemoveCart("yes", 13371337);
-
-            const elems = this.document.querySelectorAll('li');
-            expect(elems.length).to.equal(3);
-        })
 
         it('does not remove elements from DOM when removeSavedCart rejects', function () {
             const apiMock = {
