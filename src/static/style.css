@@ -4,15 +4,24 @@
     line-height: 14px;
 }
 
+.saved-cart-popup button {
+    display: flow-root;
+}
+
+.smart-basket-remove {
+    padding: 4px;
+}
+
 .smart-basket-add {
     color: #363d40;
     display: inline-flex;
+    float: right;
     transform: scale(1.1);
     transition: transform 0.2s;
     padding: 4px;
 }
 
-.smart-basket-add:hover {
+.smart-basket-remove:hover, .smart-basket-add:hover {
     transform: scale(1.3);
 }
 

@@ -62,14 +62,14 @@ export default class RimiDOM {
         return buttons.map(button => {
             return {
                 id: button.value,
-                name: button.innerHTML
+                name: button.textContent.trim()
             }
         })
     }
 
     _getCartButtons() {
         return this.window.document.querySelectorAll(
-            ".saved-cart-popup > li > button:not(.js-new-cart)"
+            ".saved-cart-popup > li > button[name='cart']:not(.js-new-cart)"
         );
     }
 
@@ -98,5 +98,11 @@ export default class RimiDOM {
 
     redirectToLoginPage() {
         this.window.location.href = '/e-veikals/account/login';
+    }
+
+    forceUserLogin() {
+        if (false === this.isLoggedIn()) {
+            return this.redirectToLoginPage();
+        }
     }
 }

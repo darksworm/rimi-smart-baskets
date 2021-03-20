@@ -48,7 +48,7 @@ function setupDOM(htmlPath) {
     delete global.window.location;
 
     Object.defineProperty(global.window, 'location', {
-        value: { href: 'https://www.rimi.lv/e-veikals/lv/checkout/cart' },
+        value: {href: 'https://www.rimi.lv/e-veikals/lv/checkout/cart'},
         configurable: true,
         enumerable: true,
         writable: true
@@ -160,11 +160,10 @@ describe('DOM with opened saved basket which is not stored', function () {
         expect(saveButton).to.exist;
     });
 
-    it('cart buttons in selector should not contain children', function () {
+    it('cart buttons in selector should not contain text other than cart name', function () {
         let cartButtons = document.querySelectorAll(".saved-cart-popup > li > button:not(.js-new-cart)");
-        for (let button of cartButtons) {
-            expect(button.children.length).to.equal(0);
-        }
+        expect(cartButtons[0].textContent.trim()).to.equal('SLD-CHKN-PESTO');
+        expect(cartButtons[1].textContent.trim()).to.equal('temp');
     });
 
     it('should create record in localstorage when save button clicked', function () {
@@ -242,7 +241,7 @@ describe('DOM with empty basket', function () {
     }
 
     function getCartAppendBtn() {
-        return getCartBtn().children[0];
+        return getCartBtn().querySelector('.smart-basket-add');
     }
 
     function mockCartChangeEndpoint() {
@@ -393,7 +392,7 @@ describe('DOM with new basket with same items as mock', function () {
     }
 
     function getCartAppendBtn() {
-        return getCartBtn().children[0];
+        return getCartBtn().querySelector('.smart-basket-add');
     }
 
     beforeEach(function () {
@@ -415,7 +414,7 @@ describe('DOM with new basket with same items as mock', function () {
     });
 
     it('should ask for confirmation when trying to open another cart', function () {
-        let otherCartBtn = document.querySelector(".saved-cart-popup > li > button");
+        let otherCartBtn = document.querySelector(".saved-cart-popup > li > button[name='cart']");
         otherCartBtn.click();
         let confirmBox = document.querySelector(".smart-basket-confirm-action");
         expect(confirmBox).to.not.be.a('null');
@@ -447,11 +446,11 @@ describe('DOM with new basket which is not empty and is not in local or rimi sto
     }
 
     function getSavedCartButton() {
-        return document.querySelector(".saved-cart-popup > li > button");
+        return document.querySelector(".saved-cart-popup > li > button[name='cart']");
     }
 
     function getOtherSavedCartButton() {
-        return document.querySelector(".saved-cart-popup > li:nth-child(2) > button");
+        return document.querySelector(".saved-cart-popup > li:nth-child(2) > button[name='cart']");
     }
 
     function getAcceptButton() {
@@ -521,5 +520,150 @@ describe('opened empty cart when not logged in', function () {
 
     it('should redirect to login page', function () {
         expect(window.location.href).to.include('/e-veikals/account/login');
+    })
+});
+
+describe('Make cart deletion possible in cart view', function () {
+    beforeEach('setup DOM', function () {
+        setupDOM('test/rimi-cart-empty.html');
+    });
+
+    it('creates remove button in each cart button in the drop down menu except for the new cart button', function () {
+        const removeBtns = document.querySelectorAll(".saved-cart-popup.js-saved li .smart-basket-remove");
+        const btns = document.querySelectorAll(".saved-cart-popup.js-saved li");
+
+        expect(removeBtns.length).to.equal(btns.length - 1);
+    });
+
+    it('when a remove button is clicked, prompt user a second time to confirm the removal', function () {
+        const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
+        removeBtn.click();
+
+        const confirmBtn = document.querySelector('.smart-basket-confirm-cart-removal');
+        expect(confirmBtn).to.not.equal(null);
+    });
+
+    it('prompt contains cart name', function () {
+        const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
+        removeBtn.click();
+
+        const prompt = document.querySelector('.smart-basket-cart-removal-prompt');
+        expect(prompt).to.not.equal(null);
+        expect(prompt.innerHTML).to.contain('dankmemes');
+    });
+
+    describe('if removal declined', function () {
+        beforeEach(async function() {
+            const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
+            removeBtn.click();
+
+            const declineBtn = document.querySelector('.smart-basket-decline-cart-removal');
+            declineBtn.click();
+
+            await asyncTasks();
+        })
+
+        it('doesn\'t post any data', function () {
+            expect(axiosMock.history.post.length).to.equal(0);
+        })
+
+        it('doesn\'t remove element', function () {
+            const btn = document.querySelector(`.saved-cart-popup.js-saved li button[value='13371337']`);
+            expect(btn).to.not.be.null;
+        })
+
+        it('keeps menu open', function () {
+            let flaggedElem = document.querySelector('.-saved-cart-active');
+            expect(flaggedElem).to.not.be.null;
+        })
+
+        it('doesn\'t display any notification', function () {
+            const notif = document.querySelector(".rimi-smart-basket-notification");
+            expect(notif).to.not.exist;
+        })
+    })
+
+    describe('if removal confirmed but api call unsuccessful', function () {
+        beforeEach(async function() {
+            axiosMock
+                .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
+                .reply(500, {})
+
+            const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
+            removeBtn.click();
+
+            const confirmBtn = document.querySelector('.smart-basket-confirm-cart-removal');
+            confirmBtn.click();
+
+            await asyncTasks();
+        })
+
+        it('doesn\'t remove element', function () {
+            const btn = document.querySelector(`.saved-cart-popup.js-saved li button[value='13371337']`);
+            expect(btn).to.not.be.null;
+        })
+
+        function getErrorMessageElement() {
+            return document.querySelector(".rimi-smart-basket-notification.error");
+        }
+
+        it('displays error message', function () {
+            expect(getErrorMessageElement()).to.exist;
+        })
+    })
+
+    describe('if removal confirmed and successful', function () {
+        let cartCode;
+
+        beforeEach(async function () {
+            axiosMock
+                .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
+                .reply(200, {})
+
+            const liElem = document.querySelector(".saved-cart-popup.js-saved li button[name='cart']");
+            liElem.id = "swagyolo123";
+            cartCode = liElem.value;
+
+            const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
+            removeBtn.click();
+
+            const confirmBtn = document.querySelector('.smart-basket-confirm-cart-removal');
+            confirmBtn.click();
+
+            await asyncTasks();
+        })
+
+        it('keeps menu open', function () {
+            let flaggedElem = document.querySelector('.-saved-cart-active');
+            expect(flaggedElem).to.not.be.null;
+        })
+
+        it('sends request to delete the cart', async function () {
+            expect(axiosMock.history.post.length).to.equal(1);
+            expect(axiosMock.history.post[0].url).to.equal('https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete');
+
+            const postData = JSON.parse(axiosMock.history.post[0].data);
+
+            expect(postData._method).to.equal("delete");
+            expect(postData._token).to.equal("redacted");
+            expect(postData.code).to.equal(cartCode);
+        })
+
+        it('removes cart li element from DOM', async function () {
+            let removedElem = document.querySelector("#swagyolo123");
+            expect(removedElem).to.be.null;
+        })
+
+        function getSuccessMessageElement() {
+            return document.querySelector(".rimi-smart-basket-notification.success");
+        }
+
+        it('displays success message', function () {
+            expect(getSuccessMessageElement()).to.exist;
+        })
+
+        it('displayed success message contains cart name', function () {
+            expect(getSuccessMessageElement().textContent).to.contain("dankmemes");
+        })
     })
 });
