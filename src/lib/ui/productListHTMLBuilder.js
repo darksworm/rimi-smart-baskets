@@ -1,3 +1,5 @@
+import rimiURLs from "../rimi/rimiURLs";
+
 export default class ProductListHTMLBuilder {
     constructor(products) {
         this.products = products;
@@ -24,9 +26,10 @@ export default class ProductListHTMLBuilder {
 
     makeProductAnchor(product) {
         let anchor = document.createElement('a');
-        anchor.href = "https://www.rimi.lv/e-veikals/lv/produkti/p/" + product.id;
+        anchor.href = rimiURLs.productPage(product.id);
         anchor.target = "_blank";
         anchor.innerHTML = product.name;
+
         return anchor;
     }
 }

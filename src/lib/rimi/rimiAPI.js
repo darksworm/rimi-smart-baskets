@@ -1,3 +1,5 @@
+import rimiURLs from "./rimiURLs";
+
 export default class RimiAPI {
     constructor(token, csrfToken, axios) {
         if (typeof token === 'undefined' || typeof csrfToken === 'undefined' || typeof axios === 'undefined') {
@@ -11,14 +13,18 @@ export default class RimiAPI {
 
     async updateProduct(productId, amount = 1, step = 1) {
         return this.axios.put(
-            this._getProductChangeURL(),
+            rimiURLs.changeCart(),
             this._getProductPutData(productId, amount, step),
             this._getAxiosConfig()
         );
     }
 
-    _getProductChangeURL() {
-        return "https://www.rimi.lv/e-veikals/cart/change";
+    async removeSavedCart(cartId) {
+        return this.axios.post(
+            rimiURLs.deleteCart(),
+            this._getRemoveSavedCartPostData(cartId),
+            this._getAxiosConfig()
+        );
     }
 
     _getProductPutData(productId, amount, step) {
@@ -29,18 +35,6 @@ export default class RimiAPI {
             "step": step,
             "product": productId
         };
-    }
-
-    removeSavedCart(cartId) {
-        return this.axios.post(
-            this._getRemoveSavedCartURL(),
-            this._getRemoveSavedCartPostData(cartId),
-            this._getAxiosConfig()
-        );
-    }
-
-    _getRemoveSavedCartURL() {
-        return "https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete";
     }
 
     _getRemoveSavedCartPostData(cartId) {

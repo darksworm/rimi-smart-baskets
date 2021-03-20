@@ -28,6 +28,21 @@ export default class PromptService {
         })
     }
 
+    notifyProductAdditionFailed(body, footer) {
+        this.promptProvider.fire({
+            icon: 'error',
+            title: 'Failed to add products!',
+            html: body,
+            footer: footer,
+            showCancelButton: false,
+            confirmButtonText: 'OK',
+            customClass: {
+                container: 'smart-basket-missing-product-warning',
+                confirmButton: 'smart-basket-accept',
+            }
+        })
+    }
+
     promptCartAbandonment() {
         return new Promise((resolve, reject) => {
             this.promptProvider.fire({
@@ -44,23 +59,6 @@ export default class PromptService {
                 resolve(result.isConfirmed);
             }).catch(reject);
         })
-    }
-
-    notifyProductAdditionFailed(body, footer) {
-        new Promise((resolve, reject) => {
-            this.promptProvider.fire({
-                icon: 'error',
-                title: 'Failed to add products!',
-                html: body,
-                footer: footer,
-                showCancelButton: false,
-                confirmButtonText: 'OK',
-                customClass: {
-                    container: 'smart-basket-missing-product-warning',
-                    confirmButton: 'smart-basket-accept',
-                }
-            }).then(resolve).catch(reject);
-        });
     }
 
     promptCartRemoval(cartName) {

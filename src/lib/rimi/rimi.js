@@ -1,5 +1,6 @@
 import RimiAPI from "./rimiAPI";
 import RimiDOM from "./rimiDOM";
+import rimiURLs from "./rimiURLs";
 
 export default class Rimi {
     constructor(window, axios) {
@@ -22,7 +23,7 @@ export default class Rimi {
     }
 
     refresh() {
-        this.window.location = `https://www.rimi.lv/e-veikals/${this._getLanguage()}/checkout/refresh`;
+        this.window.location.href = rimiURLs.refreshCart(this._getLanguage());
     }
 }
 
