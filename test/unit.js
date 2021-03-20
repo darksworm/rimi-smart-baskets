@@ -484,7 +484,7 @@ describe('RemoveBtnCreator', function () {
                 }
             }
 
-            const remover = new CartRemover(apiMock, this.document, promptServiceMock);
+            const remover = new CartRemover(this.document, apiMock, promptServiceMock);
             remover.promptAndRemoveCart("yes", 13371337);
 
             const elems = this.document.querySelectorAll('li');
@@ -498,7 +498,7 @@ describe('RemoveBtnCreator', function () {
                 }
             }
 
-            const remover = new CartRemover(apiMock, this.document, promptServiceMock);
+            const remover = new CartRemover(this.document, apiMock, promptServiceMock);
             remover.promptAndRemoveCart("yes", 13371337);
 
             const elems = this.document.querySelectorAll('li');
@@ -506,17 +506,17 @@ describe('RemoveBtnCreator', function () {
         })
 
         it('throws exception when non-existant cart removal requested', function () {
-            const remover = new CartRemover(rimiAPIMock, this.document, promptServiceMock);
+            const remover = new CartRemover(this.document, rimiAPIMock, promptServiceMock);
             expect(() => remover.promptAndRemoveCart("yas", 12345)).to.throw();
         })
 
         it('doesn\'t throw exception when existing cart removal requested', function () {
-            const remover = new CartRemover(rimiAPIMock, this.document, promptServiceMock);
+            const remover = new CartRemover(this.document, rimiAPIMock, promptServiceMock);
             remover.promptAndRemoveCart("yas", 13371337);
         })
 
         it('removes li element from DOM when removeSavedCart succeeds', async function () {
-            const remover = new CartRemover(rimiAPIMock, this.document, promptServiceMock);
+            const remover = new CartRemover(this.document, rimiAPIMock, promptServiceMock);
             remover.promptAndRemoveCart("yes",13371337);
 
             await asyncTasks();

@@ -99,4 +99,10 @@ export default class RimiDOM {
     redirectToLoginPage() {
         this.window.location.href = '/e-veikals/account/login';
     }
+
+    forceUserLogin() {
+        if (false === this.isLoggedIn()) {
+            return this.redirectToLoginPage();
+        }
+    }
 }

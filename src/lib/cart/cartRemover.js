@@ -1,7 +1,7 @@
 export default class CartRemover {
-    constructor(rimiAPI, document, promptService) {
-        this.rimiAPI = rimiAPI;
+    constructor(document, rimiAPI, promptService) {
         this.document = document;
+        this.rimiAPI = rimiAPI;
         this.promptService = promptService;
     }
 
