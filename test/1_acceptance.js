@@ -413,12 +413,66 @@ describe('DOM with new basket with same items as mock', function () {
         }
     });
 
-    it('should ask for confirmation when trying to open another cart', function () {
-        let otherCartBtn = document.querySelector(".saved-cart-popup > li > button[name='cart']");
-        otherCartBtn.click();
-        let confirmBox = document.querySelector(".smart-basket-confirm-action");
-        expect(confirmBox).to.not.be.a('null');
-    });
+    describe('when trying to open another cart', function () {
+        let cartButtonWasClickedProgrammatically;
+
+        beforeEach(function() {
+            let otherCartBtn = document.querySelector(".saved-cart-popup > li > button[name='cart']");
+            otherCartBtn.click();
+
+            cartButtonWasClickedProgrammatically = false;
+            otherCartBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                cartButtonWasClickedProgrammatically = true;
+            });
+        })
+
+        function getConfirmBox() {
+            return document.querySelector(".smart-basket-confirm-action");
+        }
+
+        function getConfirmButton() {
+            return getConfirmBox().querySelector('.smart-basket-accept');
+        }
+
+        function getDeclineButton() {
+            return getConfirmBox().querySelector('.smart-basket-cancel');
+        }
+
+        it('should ask for cart abandonment confirmation', function () {
+            expect(getConfirmBox()).to.not.be.a('null');
+        });
+
+        describe('after declining cart abandonment', function () {
+            beforeEach(async function () {
+                getDeclineButton().click();
+                await asyncTasks();
+            })
+
+            it('should close prompt', async function () {
+                expect(getConfirmBox()).to.be.a('null');
+            })
+
+            it('should not reclick the cart button', function () {
+                expect(cartButtonWasClickedProgrammatically).to.equal(false);
+            })
+        })
+
+        describe('after confirming cart abandonment', function () {
+            beforeEach(async function () {
+                getConfirmButton().click();
+                await asyncTasks();
+            })
+
+            it('should close prompt', async function() {
+                expect(getConfirmBox()).to.be.a('null');
+            })
+
+            it('should reclick the cart button', async function () {
+                expect(cartButtonWasClickedProgrammatically).to.equal(true);
+            })
+        })
+    })
 
     it('should create a missing product warning popup if failed to add products', async function () {
         getCartAppendBtn().click();
