@@ -13,6 +13,7 @@ import CartUpdater from "../src/lib/cart/cartUpdater";
 import CartRemover from "../src/lib/cart/cartRemover";
 import RemoveCartButtonCreator from "../src/lib/cart/removeCartButtonCreator";
 import LoadingIndicator from "../src/lib/ui/loadingIndicator"
+import ProductPainter from "../src/lib/ui/productPainter";
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
@@ -437,10 +438,11 @@ describe('RemoveBtnCreator', function () {
             })
         })
     })
+})
 
-    describe('CartRemover', function () {
-        beforeEach('setup dom', function () {
-            this.dom = new JSDOM(`
+describe('CartRemover', function () {
+    beforeEach('setup dom', function () {
+        this.dom = new JSDOM(`
                 <section class="cart">
                     <ul class="saved-cart-popup js-saved">
                     <li>
@@ -457,59 +459,134 @@ describe('RemoveBtnCreator', function () {
                     </li>
                     </ul>
                 </section>`, {
-                'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
-            });
-
-            this.document = this.dom.window.document;
+            'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
         });
 
-        const promptServiceMock = {
-            promptCartRemoval() {
-                return Promise.resolve(true)
-            }
-        }
+        this.document = this.dom.window.document;
+    });
 
-        const rimiAPIMock = {
+    const promptServiceMock = {
+        promptCartRemoval() {
+            return Promise.resolve(true)
+        }
+    }
+
+    const rimiAPIMock = {
+        removeSavedCart() {
+            return Promise.resolve()
+        }
+    }
+
+    it('does not remove elements from DOM when removeSavedCart rejects', function () {
+        const apiMock = {
             removeSavedCart() {
-                return Promise.resolve()
+                return Promise.reject();
             }
         }
 
-        it('does not remove elements from DOM when removeSavedCart rejects', function () {
-            const apiMock = {
-                removeSavedCart() {
-                    return Promise.reject();
-                }
-            }
+        const remover = new CartRemover(this.document, apiMock, promptServiceMock);
+        remover.promptAndRemoveCart("yes", 13371337);
 
-            const remover = new CartRemover(this.document, apiMock, promptServiceMock);
-            remover.promptAndRemoveCart("yes", 13371337);
+        const elems = this.document.querySelectorAll('li');
+        expect(elems.length).to.equal(3);
+    })
 
-            const elems = this.document.querySelectorAll('li');
-            expect(elems.length).to.equal(3);
-        })
+    it('throws exception when non-existant cart removal requested', function () {
+        const remover = new CartRemover(this.document, rimiAPIMock, promptServiceMock);
+        expect(() => remover.promptAndRemoveCart("yas", 12345)).to.throw();
+    })
 
-        it('throws exception when non-existant cart removal requested', function () {
-            const remover = new CartRemover(this.document, rimiAPIMock, promptServiceMock);
-            expect(() => remover.promptAndRemoveCart("yas", 12345)).to.throw();
-        })
+    it('doesn\'t throw exception when existing cart removal requested', function () {
+        const remover = new CartRemover(this.document, rimiAPIMock, promptServiceMock);
+        remover.promptAndRemoveCart("yas", 13371337);
+    })
 
-        it('doesn\'t throw exception when existing cart removal requested', function () {
-            const remover = new CartRemover(this.document, rimiAPIMock, promptServiceMock);
-            remover.promptAndRemoveCart("yas", 13371337);
-        })
+    it('removes li element from DOM when removeSavedCart succeeds', async function () {
+        const remover = new CartRemover(this.document, rimiAPIMock, promptServiceMock);
+        remover.promptAndRemoveCart("yes", 13371337);
 
-        it('removes li element from DOM when removeSavedCart succeeds', async function () {
-            const remover = new CartRemover(this.document, rimiAPIMock, promptServiceMock);
-            remover.promptAndRemoveCart("yes",13371337);
+        await asyncTasks();
 
-            await asyncTasks();
+        const btn = this.document.querySelector(`.saved-cart-popup.js-saved li button[value='13371337']`);
+        expect(btn).to.be.null;
 
-            const btn = this.document.querySelector(`.saved-cart-popup.js-saved li button[value='13371337']`);
-            expect(btn).to.be.null;
-
-            const elems = this.document.querySelectorAll('li');
-            expect(elems.length).to.equal(2);
-        })
+        const elems = this.document.querySelectorAll('li');
+        expect(elems.length).to.equal(2);
     })
 })
+
+describe('ProductPainter', function () {
+    let originalDOM;
+    let painter;
+
+    beforeEach('setup two categories with two products each', function () {
+        originalDOM =`
+            <div class="cart__content">
+                <div>
+                    <div class="js-checkout-cart-categories">
+                        <div class="cart-category" data-gtms-content-category="somecategory">
+                            <header></header>
+                            <div data-product-code="111" class="js-product-container js-cart-card-container cart-card in-cart"></div>
+                            <div data-product-code="222" class="js-product-container js-cart-card-container cart-card in-cart"></div>
+                        </div>
+                        <div class="cart-category" data-gtms-content-category="someothercategory">
+                            <div data-product-code="333" class="js-product-container js-cart-card-container cart-card in-cart"></div>
+                            <div data-product-code="444" class="js-product-container js-cart-card-container cart-card in-cart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+        this.dom = new JSDOM(originalDOM, {
+            'url': 'https://www.rimi.lv/e-veikals/lv/checkout/cart'
+        });
+        this.document = this.dom.window.document;
+        painter = new ProductPainter(this.document);
+    });
+
+    it('doesn\'t change DOM if no products added', function () {
+        painter.paint([], "painted");
+        const DOMAfterPaint = this.document.querySelector('.cart__content').outerHTML;
+        expect(DOMAfterPaint.trim()).to.equal(originalDOM.trim());
+    })
+
+    it('doesn\'t change DOM if non-existant product ids passed', function () {
+        painter.paint([666,777,888,999], "painted");
+        const DOMAfterPaint = this.document.querySelector('.cart__content').outerHTML;
+        expect(DOMAfterPaint.trim()).to.equal(originalDOM.trim());
+    })
+
+    it('doesn\'t add class to products which weren\'t passed', function () {
+        painter.paint([222, 444], "painted");
+        const unpaintedElements = this.document.querySelectorAll(
+            ".cart-category div:first-of-type:not(.painted)"
+        );
+        expect(unpaintedElements.length).to.equal(2);
+    })
+
+    it('doesn\'t change existing product element classes', function () {
+        const toBePaintedElement = this.document.querySelector(".cart-category div[data-product-code='111']");
+        const oldClassList = [... toBePaintedElement.classList];
+
+        painter.paint([111], "painted");
+
+        const paintedElement = this.document.querySelector(".cart-category div[data-product-code='111']");
+        const newClassList = [... paintedElement.classList];
+
+        for (let oldClass of oldClassList) {
+            expect(newClassList).to.include(oldClass);
+        }
+    })
+
+    it('adds class to passed product ids', function () {
+        painter.paint([111, 333], "painted");
+        const paintedElements = this.document.querySelectorAll(
+            ".cart-category div.painted"
+        );
+
+        const paintedElementIds = [... paintedElements].map((e) => +e.dataset.productCode);
+
+        expect(paintedElements.length).to.equal(2);
+        expect(paintedElementIds).to.deep.equal([111, 333]);
+    })
+});

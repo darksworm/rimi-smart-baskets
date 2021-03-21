@@ -99,6 +99,23 @@ function getMockCarts() {
                 "hiddenStep": "1"
             }]
         },
+         '1101522953': {
+            id: '1101522953',
+            name: 'temp',
+            products: [
+                {
+                    "id": "235436",
+                    "name": "Sķidrās ziepes garnier",
+                    "category": "yes",
+                    "brand": "cits",
+                    "price": 2.27,
+                    "currency": "EUR",
+                    "quantity": 1,
+                    "hiddenAmount": "1",
+                    "hiddenStep": "1"
+                }
+            ]
+        },
         '1101456706': {
             id: '1101456706',
             name: 'KETO-CHILLI',
@@ -407,30 +424,55 @@ describe('DOM with opened saved basket that is already stored', function () {
 });
 
 describe('DOM with new basket with same items as mock', function () {
-    function getCartBtn() {
-        return document.querySelector('.saved-cart-popup button[name="cart"]');
+    function getCartBtn(index) {
+        return document.querySelectorAll('.saved-cart-popup button[name="cart"]')[index];
     }
 
-    function getCartAppendBtn() {
-        return getCartBtn().querySelector('.smart-basket-add');
+    function getCartAppendBtn(index) {
+        return getCartBtn(index).querySelector('.smart-basket-add');
+    }
+
+    function fakeRefresh() {
+        setupDOM('test/rimi-cart-new.html');
     }
 
     beforeEach(function () {
         setupMockCarts();
         setupDOM('test/rimi-cart-new.html');
+
         axiosMock
             .onPut("https://www.rimi.lv/e-veikals/cart/change")
             .reply(200, {})
     });
 
-    it('should request 2 of all products because one already in the basket', async function () {
-        getCartAppendBtn().click();
+    it('should send change requests with two as product amount', async function () {
+        getCartAppendBtn(0).click();
         await asyncTasks();
+
+        expect(axiosMock.history.put.length).to.equal(3);
 
         for (let request of axiosMock.history.put) {
             let data = JSON.parse(request.data);
             expect(data.amount).to.equal(2);
         }
+    });
+
+    it('shouldn\'t accent any products in basket if adding all failed', async function () {
+        getCartAppendBtn(1).click();
+        await asyncTasks();
+        fakeRefresh();
+
+        const addedProducts = document.querySelectorAll('.smart-basket-newly-added-product');
+        expect(addedProducts.length).to.equal(0);
+    });
+
+    it('should accent all products in basket after adding them', async function () {
+        getCartAppendBtn(0).click();
+        await asyncTasks();
+        fakeRefresh();
+
+        const addedProducts = document.querySelectorAll('.smart-basket-newly-added-product');
+        expect(addedProducts.length).to.equal(3);
     });
 
     describe('when trying to open another cart', function () {
@@ -495,7 +537,7 @@ describe('DOM with new basket with same items as mock', function () {
     })
 
     it('should create a missing product warning popup if failed to add products', async function () {
-        getCartAppendBtn().click();
+        getCartAppendBtn(0).click();
         await asyncTasks();
 
         setupDOM('test/rimi-cart-new.html');

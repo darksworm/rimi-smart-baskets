@@ -32,18 +32,26 @@ export default class RimiDOM {
     }
 
     _getCurrentCartProducts() {
-        let productElements = Array.from(this._getCartProductElements());
-        return productElements.map(this._createProductFromElement)
+        const productElements = Array.from(this._getCartProductElements());
+        return productElements.map((e) => this._createProductFromElement(e))
     }
 
     _createProductFromElement(element) {
-        let jsonData = element.dataset.gtmEecProduct;
-        let product = JSON.parse(jsonData);
+        const jsonData = element.dataset.gtmEecProduct;
+        let product = this._decodeProductData(jsonData);
 
         product.hiddenAmount = element.querySelector('.js-counter input[name="amount"]').value;
         product.hiddenStep = element.querySelector('.js-counter input[name="step"]').value;
 
         return product;
+    }
+
+    _decodeProductData(rawData) {
+        try {
+            return JSON.parse(rawData);
+        } catch (e) {
+            throw new Error('product data decoding failed, ' + rawData);
+        }
     }
 
     _getCartByTitle(allCarts, cartName) {

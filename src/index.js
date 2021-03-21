@@ -6,6 +6,7 @@ import {createCartManipulationButtons} from "./lib/feature/createCartManipulatio
 import {notifyUserIfCartUpdateFailed} from "./lib/feature/notifyUserIfCartUpdateFailed";
 import {promptUserWhenAboutToAbandonCart} from "./lib/feature/promptUserWhenAboutToAbandonCart";
 import {injectCustomStyles} from "./lib/feature/injectCustomStyles";
+import {accentUpdatedProducts} from "./lib/feature/accentUpdatedProducts";
 
 (function () {
     "use strict";
@@ -18,5 +19,10 @@ import {injectCustomStyles} from "./lib/feature/injectCustomStyles";
     injectCustomStyles(document);
     createCartManipulationButtons(document, rimi, cartStorage, promptService);
     promptUserWhenAboutToAbandonCart(document, rimi.dom, promptService);
-    notifyUserIfCartUpdateFailed(rimi.dom, cartStorage, promptService);
+
+    const cartUpdate = cartStorage.popCartUpdate();
+    if (cartUpdate) {
+        notifyUserIfCartUpdateFailed(rimi.dom, cartUpdate, promptService);
+        accentUpdatedProducts(document, cartUpdate);
+    }
 })();

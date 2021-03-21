@@ -108,3 +108,7 @@
         transform: translate(24px, 0);
     }
 }
+
+.smart-basket-newly-added-product {
+    background: #fdffbe;
+}
