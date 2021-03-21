@@ -7,6 +7,8 @@ import {notifyUserIfCartUpdateFailed} from "./lib/feature/notifyUserIfCartUpdate
 import {promptUserWhenAboutToAbandonCart} from "./lib/feature/promptUserWhenAboutToAbandonCart";
 import {injectCustomStyles} from "./lib/feature/injectCustomStyles";
 import {accentUpdatedProducts} from "./lib/feature/accentUpdatedProducts";
+import {updateStoredCartsOnChanges} from "./lib/feature/updateStoredCartsOnChanges";
+import {storeOpenedSavedCart} from "./lib/feature/storeOpenedSavedCart";
 
 (function () {
     "use strict";
@@ -17,6 +19,10 @@ import {accentUpdatedProducts} from "./lib/feature/accentUpdatedProducts";
     rimi.dom.forceUserLogin();
 
     injectCustomStyles(document);
+
+    storeOpenedSavedCart(rimi.dom, cartStorage);
+    updateStoredCartsOnChanges(document, rimi.dom, cartStorage);
+
     createCartManipulationButtons(document, rimi, cartStorage, promptService);
     promptUserWhenAboutToAbandonCart(document, rimi.dom, promptService);
 

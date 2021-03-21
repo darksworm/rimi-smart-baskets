@@ -42,6 +42,7 @@
     "webpack-shell-plugin-next": "^2.1.1"
   },
   "dependencies": {
+    "mutation-observer": "^1.0.3",
     "notyf": "^3.9.0",
     "sweetalert2": "^10.13.3"
   }
