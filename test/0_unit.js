@@ -14,6 +14,7 @@ import CartRemover from "../src/lib/cart/cartRemover";
 import RemoveCartButtonCreator from "../src/lib/cart/removeCartButtonCreator";
 import LoadingIndicator from "../src/lib/ui/loadingIndicator"
 import ProductPainter from "../src/lib/ui/productPainter";
+import DOMCartChangeListener from "../src/lib/cart/DOMCartChangeListener";
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
@@ -520,7 +521,7 @@ describe('ProductPainter', function () {
     let painter;
 
     beforeEach('setup two categories with two products each', function () {
-        originalDOM =`
+        originalDOM = `
             <div class="cart__content">
                 <div>
                     <div class="js-checkout-cart-categories">
@@ -551,7 +552,7 @@ describe('ProductPainter', function () {
     })
 
     it('doesn\'t change DOM if non-existant product ids passed', function () {
-        painter.paint([666,777,888,999], "painted");
+        painter.paint([666, 777, 888, 999], "painted");
         const DOMAfterPaint = this.document.querySelector('.cart__content').outerHTML;
         expect(DOMAfterPaint.trim()).to.equal(originalDOM.trim());
     })
@@ -566,12 +567,12 @@ describe('ProductPainter', function () {
 
     it('doesn\'t change existing product element classes', function () {
         const toBePaintedElement = this.document.querySelector(".cart-category div[data-product-code='111']");
-        const oldClassList = [... toBePaintedElement.classList];
+        const oldClassList = [...toBePaintedElement.classList];
 
         painter.paint([111], "painted");
 
         const paintedElement = this.document.querySelector(".cart-category div[data-product-code='111']");
-        const newClassList = [... paintedElement.classList];
+        const newClassList = [...paintedElement.classList];
 
         for (let oldClass of oldClassList) {
             expect(newClassList).to.include(oldClass);
@@ -584,9 +585,139 @@ describe('ProductPainter', function () {
             ".cart-category div.painted"
         );
 
-        const paintedElementIds = [... paintedElements].map((e) => +e.dataset.productCode);
+        const paintedElementIds = [...paintedElements].map((e) => +e.dataset.productCode);
 
         expect(paintedElements.length).to.equal(2);
         expect(paintedElementIds).to.deep.equal([111, 333]);
+    })
+});
+
+describe('DOMCartChangeListener', function () {
+    let document;
+    let callbackWasExecuted;
+    let observeParams = [];
+    const callback = () => callbackWasExecuted = true;
+
+    const mutationObserverMock = function (callback) {
+        mutationObserverMock.sendMutations = callback;
+        return {
+            observe: (target, options) => {
+                observeParams = [target, options];
+            }
+        };
+    };
+
+    beforeEach(function () {
+        observeParams = [];
+        callbackWasExecuted = false;
+        const dom = new JSDOM(`<div class="cart__content"></div>`, {});
+        document = dom.window.document;
+    })
+
+    it('executes observe method with cart__content node and correct settings', function () {
+        const cartChangeListener = new DOMCartChangeListener(document, mutationObserverMock, callback);
+        cartChangeListener.startListening();
+
+        expect([...observeParams[0].classList]).to.contain('cart__content');
+        expect(observeParams[1]).to.deep.equal({
+            attributes: false,
+            childList: true,
+            characterData: false,
+            subtree: true
+        });
+    })
+
+    it('doesn\'t execute callback when non-childList mutations observed', async function () {
+        const cartChangeListener = new DOMCartChangeListener(document, mutationObserverMock, callback);
+        cartChangeListener.startListening();
+
+        mutationObserverMock.sendMutations([
+            {'type': 'attributes'},
+            {'type': 'characterData'}
+        ]);
+
+        await asyncTasks();
+
+        expect(callbackWasExecuted).to.equal(false);
+    });
+
+    describe('when irrelevant nodes', function () {
+        let nodes;
+
+        beforeEach(function () {
+            const cartChangeListener = new DOMCartChangeListener(document, mutationObserverMock, callback);
+            cartChangeListener.startListening();
+            nodes = [
+                document.createElement('span'),
+                document.createElement('div'),
+                document.createTextNode("hello i am a text node")
+            ];
+        })
+
+        it('added, doesn\'t execute callback', async function () {
+            const container = document.querySelector('.cart__content');
+            mutationObserverMock.sendMutations([
+                {
+                    'type': 'childList',
+                    addedNodes: document.querySelectorAll('.cart__content *'),
+                    removedNodes: []
+                },
+            ]);
+
+            await asyncTasks();
+            expect(callbackWasExecuted).to.equal(false);
+        });
+
+        it('removed, doesn\'t execute callback', async function () {
+            mutationObserverMock.sendMutations([
+                {
+                    'type': 'childList',
+                    addedNodes: [],
+                    removedNodes: document.querySelectorAll('.cart__content *')
+                },
+            ]);
+
+            await asyncTasks();
+            expect(callbackWasExecuted).to.equal(false);
+        });
+    })
+
+    describe('when div with js-checkout-cart-categories class', function () {
+        let node;
+
+        beforeEach(function () {
+            const cartChangeListener = new DOMCartChangeListener(document, mutationObserverMock, callback);
+            cartChangeListener.startListening();
+            node = document.createElement('div');
+            node.classList.add('js-checkout-cart-categories');
+
+            const child = document.createElement('div');
+            child.classList.add('js-product-container', 'in-cart');
+
+            document.body.appendChild(node);
+            document.querySelector('.js-checkout-cart-categories').appendChild(child);
+        })
+
+        it('removed, executes callback', function () {
+            mutationObserverMock.sendMutations([
+                {
+                    'type': 'childList',
+                    removedNodes: [document.querySelector('.js-checkout-cart-categories')],
+                    addedNodes: []
+                },
+            ]);
+            expect(callbackWasExecuted).to.equal(true);
+        })
+
+        it('added, executes callback', function () {
+            mutationObserverMock.sendMutations([
+                {
+                    'type': 'childList',
+                    addedNodes: [document.querySelector('.js-checkout-cart-categories')],
+                    removedNodes: []
+                },
+            ]);
+            expect(callbackWasExecuted).to.equal(true);
+        })
     })
 });

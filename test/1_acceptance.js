@@ -99,7 +99,7 @@ function getMockCarts() {
                 "hiddenStep": "1"
             }]
         },
-         '1101522953': {
+        '1101522953': {
             id: '1101522953',
             name: 'temp',
             products: [
@@ -136,8 +136,8 @@ function getMockCarts() {
     };
 }
 
-function setupMockCarts() {
-    let carts = getMockCarts();
+function setupMockCarts(carts) {
+    carts = carts || getMockCarts();
     localStorage.setItem('carts', JSON.stringify(carts));
 }
 
@@ -152,35 +152,8 @@ it('injects custom CSS elements', function () {
 })
 
 describe('DOM with opened saved basket which is not stored', function () {
-    function getCarts() {
-        return JSON.parse(global.localStorage.carts);
-    }
-
-    function saveCurrentCart() {
-        document.querySelector('.smart-basket-save-button').click();
-    }
-
-    function getFirstCart() {
-        let carts = getCarts();
-        let firstCartKey = Object.keys(carts)[0];
-        return carts[firstCartKey];
-    }
-
     beforeEach(function () {
         setupDOM('test/rimi-cart-saved-cart-opened.html')
-    });
-
-    it('shouldn\'t write to localStorage on inject', function () {
-        expect(localStorage).to.be.empty;
-    });
-
-    it('should contain `Save cart in "Smart Baskets"` button', function () {
-        let allButtons = document.getElementsByTagName("button");
-        let saveButton = Array.from(allButtons)
-            .find(function (el) {
-                return el.innerText === "Save cart in \"Smart Baskets\""
-            });
-        expect(saveButton).to.exist;
     });
 
     it('cart buttons in selector should not contain text other than cart name', function () {
@@ -188,74 +161,6 @@ describe('DOM with opened saved basket which is not stored', function () {
         expect(cartButtons[0].textContent.trim()).to.equal('SLD-CHKN-PESTO');
         expect(cartButtons[1].textContent.trim()).to.equal('temp');
     });
-
-    it('should create record in localstorage when save button clicked', function () {
-        saveCurrentCart();
-        expect(localStorage.carts).to.not.be.empty;
-    });
-
-    it('should store correct product count when save button clicked', function () {
-        saveCurrentCart();
-
-        let firstCartProductCount = getFirstCart().products.length;
-        let DOMProductCount = document.querySelectorAll(".js-product-container.in-cart").length;
-
-        expect(DOMProductCount).to.equal(firstCartProductCount);
-    });
-
-    it('should store the cart indexed by a number when save button clicked', function () {
-        saveCurrentCart();
-        let cartIndexes = Object.keys(getCarts());
-        for (let index of cartIndexes) {
-            expect(index).to.equal((+index).toString());
-        }
-    });
-
-    it('should change product count if cart saved, then a product is removed, then saved again', function () {
-        saveCurrentCart();
-        let initialCartProductCount = getFirstCart().products.length;
-
-        let productsInCart = window.document.querySelectorAll(".js-product-container.in-cart");
-        let productToRemoveIndex = Math.floor(Math.random() * productsInCart.length);
-        productsInCart[productToRemoveIndex].remove();
-
-        saveCurrentCart();
-
-        let afterCartProductCount = getFirstCart().products.length;
-
-        expect(afterCartProductCount).to.equal(initialCartProductCount - 1);
-    });
-
-    describe('after saving cart', function () {
-        beforeEach(async function () {
-            setupDOM('test/rimi-cart-saved-cart-opened.html');
-            saveCurrentCart();
-        });
-
-        function getSuccessMessageElement() {
-            return document.querySelector(".rimi-smart-basket-notification.success");
-        }
-
-        it('should display a success message when cart saved', async function () {
-            let successMessage = getSuccessMessageElement();
-            expect(successMessage).to.exist;
-        });
-
-        it('displayed success message should contain the saved baskets name', function () {
-            let successMessage = getSuccessMessageElement().textContent;
-            expect(successMessage).to.include('KETO-CHILLI');
-        });
-
-        it('displayed success message should have a greenish backdrop', function () {
-            let successMessage = getSuccessMessageElement().children[1];
-            let color = successMessage.style.background;
-            let rgb = color.substring(4, color.length - 1)
-                .replace(/ /g, '')
-                .split(',');
-            expect(+rgb[1], 'green should be greater than red').to.be.above(+rgb[0]);
-            expect(+rgb[1], 'green should be greater than blue').to.be.above(+rgb[2]);
-        })
-    })
 });
 
 describe('DOM with empty basket', function () {
@@ -385,43 +290,101 @@ describe('DOM with empty basket', function () {
     });
 });
 
-describe('DOM with opened saved basket that is already stored', function () {
-    function saveCurrentCart() {
-        document.querySelector('.smart-basket-save-button').click();
+describe('automatic stored cart updater', function () {
+    function getFirstCartProductsAsInDOM() {
+        return getMockCarts()['13371337'].products;
     }
 
-    function getSuccessMessageElement() {
-        return document.querySelector(".rimi-smart-basket-notification.success");
+    function getFirstCartProducts() {
+        return JSON.parse(localStorage.getItem('carts'))['13371337'].products;
     }
 
-    beforeEach(function () {
-        setupMockCarts();
-        setupDOM('test/rimi-cart-saved-cart-opened.html')
-    });
+    describe('for cart which is not stored', function () {
+        beforeEach(async function () {
+            setupMockCarts({});
+            setupDOM('test/rimi-cart-saved-cart-opened.html');
+            await asyncTasks();
+        })
 
-    it('should display smart basket add button with update caption', function () {
-        const btnText = document.querySelector('.smart-basket-save-button').innerText;
-        expect(btnText).to.equal('Update cart in "Smart Baskets"');
-    });
-
-    it('should display a success message when cart saved', function () {
-        saveCurrentCart();
-        let successMessage = getSuccessMessageElement();
-        expect(successMessage).to.not.be.a('null');
-    });
-
-    it('displayed success message should contain the saved baskets name', function () {
-        saveCurrentCart();
-        let successMessage = getSuccessMessageElement().textContent;
-        expect(successMessage).to.include('KETO-CHILLI');
-    });
-
-    it('displayed success message should contain the word "updated"', function () {
-        saveCurrentCart();
-        let successMessage = getSuccessMessageElement().textContent;
-        expect(successMessage.toLowerCase()).to.include("updated");
+        it('should create the cart in localStorage', function () {
+            const cart = JSON.parse(localStorage.getItem('carts'))['13371337'];
+            expect(cart).to.not.be.undefined;
+            expect(cart.products).to.not.be.empty;
+            expect(cart.name).to.equal('KETO-CHILLI');
+            expect(cart.id).to.equal('13371337');
+        })
     })
-});
+
+    describe('for an unchanged stored basket', function() {
+        beforeEach(async function() {
+            setupMockCarts();
+            setupDOM('test/rimi-cart-saved-cart-opened.html');
+        })
+
+        describe('when first product is', function () {
+            let HTML, parent, name;
+
+            beforeEach(async function () {
+                const elem = document.querySelector('.js-product-container');
+                name = elem.dataset.gtmsClickName;
+                parent = elem.parentElement;
+                HTML = elem.outerHTML;
+
+                elem.remove();
+            })
+
+            it('removed, it is also removed from stored cart', async function () {
+                await asyncTasks();
+                expect(getFirstCartProducts().map(x => x.name)).to.not.include(name);
+            })
+
+            it('added back, it is also added back to stored cart', async function () {
+                const node = document.createElement('div');
+                node.innerHTML = HTML;
+                parent.appendChild(node.firstChild);
+
+                await asyncTasks();
+                expect(getFirstCartProducts().map(x => x.name)).to.include(name);
+            })
+        })
+
+        it('should empty stored cart if all products removed', async function () {
+            let elems = document.querySelectorAll('.js-product-container.in-cart');
+            for (let elem of elems) {
+                elem.remove();
+            }
+            await asyncTasks();
+            expect(getFirstCartProducts().length).to.equal(0);
+        })
+    })
+
+    describe('for stored basket but DOM contains different amount of products', function () {
+        beforeEach(async function () {
+            let carts = getMockCarts();
+            carts['13371337'].products[0].hiddenAmount = 2;
+            carts['13371337'].products[0].quantity = 2;
+            setupMockCarts(carts);
+
+            setupDOM('test/rimi-cart-saved-cart-opened.html')
+        });
+
+        it('shouldn\'t change unaltered products in storage', function () {
+            const inDOM = getFirstCartProductsAsInDOM();
+            const inStorage = getFirstCartProducts();
+
+            delete inDOM[0];
+            delete inStorage[0];
+
+            expect(inStorage).to.deep.equal(inDOM);
+        })
+
+        it('should update the product whose quantity has changed', async function () {
+            const products = getFirstCartProducts();
+            expect(+products[0].hiddenAmount).to.equal(1);
+            expect(+products[0].quantity).to.equal(1);
+        })
+    })
+})
 
 describe('DOM with new basket with same items as mock', function () {
     function getCartBtn(index) {
@@ -478,7 +441,7 @@ describe('DOM with new basket with same items as mock', function () {
     describe('when trying to open another cart', function () {
         let cartButtonWasClickedProgrammatically;
 
-        beforeEach(function() {
+        beforeEach(function () {
             let otherCartBtn = document.querySelector(".saved-cart-popup > li > button[name='cart']");
             otherCartBtn.click();
 
@@ -526,7 +489,7 @@ describe('DOM with new basket with same items as mock', function () {
                 await asyncTasks();
             })
 
-            it('should close prompt', async function() {
+            it('should close prompt', async function () {
                 expect(getConfirmBox()).to.be.a('null');
             })
 
@@ -634,6 +597,10 @@ describe('opened empty cart when not logged in', function () {
         setupDOM('test/rimi-cart-not-logged-in.html');
     });
 
+    it('shouldn\'t write to localStorage on inject', function () {
+        expect(localStorage).to.be.empty;
+    });
+
     it('should redirect to login page', function () {
         expect(window.location.href).to.include('/e-veikals/account/login');
     })
@@ -669,7 +636,7 @@ describe('Make cart deletion possible in cart view', function () {
     });
 
     describe('if removal declined', function () {
-        beforeEach(async function() {
+        beforeEach(async function () {
             const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
             removeBtn.click();
 
@@ -700,7 +667,7 @@ describe('Make cart deletion possible in cart view', function () {
     })
 
     describe('if removal confirmed but api call unsuccessful', function () {
-        beforeEach(async function() {
+        beforeEach(async function () {
             axiosMock
                 .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
                 .reply(500, {})
