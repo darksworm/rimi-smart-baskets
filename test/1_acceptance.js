@@ -152,10 +152,6 @@ it('injects custom CSS elements', function () {
 })
 
 describe('DOM with opened saved basket which is not stored', function () {
-    function getCarts() {
-        return JSON.parse(global.localStorage.carts);
-    }
-
     beforeEach(function () {
         setupDOM('test/rimi-cart-saved-cart-opened.html')
     });
