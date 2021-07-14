@@ -6,6 +6,7 @@
 // @description  __DESCRIPTION__
 // @author       darksworm
 // @match        https://www.rimi.lv/e-veikals/*/checkout/cart
+// @match        https://www.rimi.lv/e-veikals/*/checkout
 // @require      https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.0/axios.min.js
 // @require      https://cdn.jsdelivr.net/npm/notyf@3.9.0/notyf.min.js
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@10.14.0/dist/sweetalert2.all.js
