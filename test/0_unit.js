@@ -15,6 +15,7 @@ import RemoveCartButtonCreator from "../src/lib/cart/removeCartButtonCreator";
 import LoadingIndicator from "../src/lib/ui/loadingIndicator"
 import ProductPainter from "../src/lib/ui/productPainter";
 import DOMCartChangeListener from "../src/lib/cart/DOMCartChangeListener";
+import rimiURLs from "../src/lib/rimi/rimiURLs";
 
 describe('RimiDOM with blank page and google.com as URL', function () {
     let rimiDOM;
@@ -124,7 +125,7 @@ describe('RimiAPI', function () {
 
         it('calls axios.post with delete endpoint', function () {
             api.removeSavedCart(123);
-            expect(postURL).to.equal("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete");
+            expect(postURL).to.equal(rimiURLs.deleteCart());
         })
 
         it('posts first passed element as code element', function () {

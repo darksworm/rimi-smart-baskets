@@ -12,6 +12,8 @@ import {asyncTasks} from "await-async-task";
 import AxiosMockAdapter from "axios-mock-adapter";
 import 'mock-local-storage';
 
+import rimiURLs from "../src/lib/rimi/rimiURLs";
+
 const script = fs.readFileSync('dist/userscript.js', 'utf-8');
 
 before(function () {
@@ -669,7 +671,7 @@ describe('Make cart deletion possible in cart view', function () {
     describe('if removal confirmed but api call unsuccessful', function () {
         beforeEach(async function () {
             axiosMock
-                .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
+                .onPost(rimiURLs.deleteCart())
                 .reply(500, {})
 
             const removeBtn = document.querySelector(".saved-cart-popup.js-saved li .smart-basket-remove");
@@ -704,7 +706,7 @@ describe('Make cart deletion possible in cart view', function () {
 
         beforeEach(async function () {
             axiosMock
-                .onPost("https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete")
+                .onPost(rimiURLs.deleteCart())
                 .reply(200, {})
 
             const liElem = document.querySelector(".saved-cart-popup.js-saved li button[name='cart']");
@@ -727,7 +729,7 @@ describe('Make cart deletion possible in cart view', function () {
 
         it('sends request to delete the cart', async function () {
             expect(axiosMock.history.post.length).to.equal(1);
-            expect(axiosMock.history.post[0].url).to.equal('https://www.rimi.lv/e-veikals/lv/mans-konts/saglabatie-grozi/delete');
+            expect(axiosMock.history.post[0].url).to.equal(rimiURLs.deleteCart());
 
             const postData = JSON.parse(axiosMock.history.post[0].data);
 
